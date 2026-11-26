@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ennCreative PDF Tools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@700&family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&family=Montserrat:wght@400;700&family=Poppins:wght@400;700&family=Lato:wght@400;700&family=Nunito:wght@400;700&family=Raleway:wght@400;700&family=Oswald:wght@400;700&family=Bebas+Neue&family=Playfair+Display:wght@400;700&family=Merriweather:wght@400;700&family=Lora:wght@400;700&family=Libre+Baskerville:wght@400;700&family=EB+Garamond:wght@400;700&family=Dancing+Script:wght@400;700&family=Great+Vibes&family=Pacifico&family=Caveat:wght@400;700&family=Satisfy&family=Sacramento&family=Courier+Prime:wght@400;700&family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: alat kerja yang tenang dan cepat, seperti meja editor di kantor percetakan
+   IDEA: lembar kertas di atas alas potong (cutting mat) berwarna mint
+   PICTURE: halaman PDF itu sendiri, besar di tengah, dengan anotasi hidup
+   COLOUR and TYPE: hitam-putih + satu bidang mint; Space Grotesk 700 + Inter
+   LAYOUT: bilah alat di atas, daftar halaman di kiri, kertas di tengah; di HP bertumpuk */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#0b0b0b);--ink:light-dark(#0d0d0d,#f1f1ee);--mute:light-dark(#585d5a,#a3aaa5);
+--line:light-dark(#e6e1dc,#2c2724);--field:light-dark(#f6e4d1,#1d1713);--panel:light-dark(#f8f6f4,#13110f);
+--acc:light-dark(#141010,#f2a36b);--accInk:light-dark(#ffffff,#140d08);--mint:#f2a36b;--bgimg:url(bg.jpg)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,sans-serif;overflow:hidden;display:grid;grid-template-rows:auto 1fr}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.top{display:flex;align-items:center;gap:12px;padding:10px max(2vw,12px);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{margin:0;font-size:inherit}
+.brandbtn{display:flex;align-items:center;gap:10px;border:0;background:none;padding:2px;border-radius:10px;text-align:left}
+.mark{width:38px;height:38px;border-radius:10px;background:var(--acc);color:light-dark(#f2a36b,#140d08);display:grid;place-items:center;font:700 16px/1 "Space Grotesk",sans-serif;flex:none}
+.bt strong{display:block;font:700 21px/1.05 "Space Grotesk",Inter,sans-serif;letter-spacing:-.01em}
+.bt small{display:block;font-size:12px;color:var(--mute);font-weight:500;margin-top:2px}
+.vsep{width:1px;height:30px;background:var(--line)}
+.top .grow{flex:1}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--mute);border:1px solid var(--line);border-radius:20px;padding:6px 12px}
+.badge svg{width:16px;height:16px}
+body.home .ed-only,body:not(.home) .home-only{display:none!important}
+body.home .app,body:not(.home) .home{display:none}
+.home{overflow:auto;min-height:0;display:flex;flex-direction:column}
+.hwrap{width:100%;max-width:1080px;margin:0 auto;padding:clamp(32px,5vw,64px) max(4vw,16px) 40px;display:grid;gap:22px;flex:1}
+.intro h2{font:700 clamp(30px,4.4vw,48px)/1.05 "Space Grotesk",Inter,sans-serif;letter-spacing:-.02em;margin:0 0 12px;text-wrap:balance}
+.intro p{margin:0;max-width:62ch;font-size:17px;color:var(--mute)}
+.drop{background:var(--field);border:2px dashed light-dark(rgba(20,16,16,.3),rgba(242,163,107,.45));border-radius:20px;min-height:320px;display:grid;place-content:center;justify-items:center;text-align:center;gap:8px;padding:40px 20px;cursor:pointer;transition:border-color .2s,transform .2s;color:var(--ink)}
+.drop:hover,.drop.over{border-color:var(--acc);border-style:solid}
+.drop.over{transform:scale(1.01)}
+.drop .doc{width:84px;height:98px;margin-bottom:8px;color:#0d0d0d}
+.drop strong{font:700 24px/1.1 "Space Grotesk",Inter,sans-serif}
+.drop .dsub{color:var(--mute)}
+.drop small{color:var(--mute);font-size:13px;margin-top:6px}
+.btn.big{min-height:48px;padding:0 22px;font-size:16px;margin-top:4px}
+.hlinks{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center}
+.lnk{border:0;background:none;padding:8px 4px;min-height:44px;font-weight:500;text-decoration:underline;text-underline-offset:3px;color:var(--ink)}
+.feats{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px}
+.feats li{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;padding:16px}
+.feats .fi{width:40px;height:40px;border-radius:10px;background:var(--field);display:grid;place-items:center;flex:none}
+.feats strong{font-weight:600}
+.feats p{margin:2px 0 0;font-size:14px;color:var(--mute);line-height:1.45}
+.has-bg .home{background:linear-gradient(180deg,rgba(12,8,6,.66),rgba(12,8,6,.5) 45%,rgba(12,8,6,.78)),var(--bgimg) center/cover no-repeat fixed;color:#fff}
+.has-bg .home *{text-shadow:0 1px 14px rgba(0,0,0,.55)}
+.has-bg .intro p{color:rgba(255,255,255,.88)}
+.has-bg .drop{background:none;border:2px dashed transparent;color:#fff;min-height:280px}
+.has-bg .drop:hover{border-color:transparent}
+.has-bg .drop.over{border-color:rgba(242,163,107,.9);background:rgba(242,163,107,.08)}
+.has-bg .drop .doc{color:#fff;filter:drop-shadow(0 6px 20px rgba(0,0,0,.45))}
+.has-bg .drop .doc path:first-child{fill:rgba(255,255,255,.08)}
+.has-bg .drop .dsub,.has-bg .drop small{color:rgba(255,255,255,.8)}
+.has-bg .drop .btn.pri{background:#f2a36b;color:#140d08;border-color:#f2a36b;text-shadow:none;box-shadow:0 10px 30px -8px rgba(0,0,0,.6)}
+.has-bg .drop:hover .btn.pri{background:#f7b98a}
+.has-bg .lnk{color:#fff}
+.has-bg .feats li{background:none;border:0;padding:8px 4px;color:#fff}
+.has-bg .feats p{color:rgba(255,255,255,.78)}
+.has-bg .feats .fi{background:none;color:#f2a36b;width:28px;height:28px}
+.has-bg .feats .fi svg{width:26px;height:26px}
+.has-bg .foot{background:none;color:rgba(255,255,255,.72);border-top-color:rgba(255,255,255,.14)}
+.has-bg .stage{background:linear-gradient(rgba(14,10,8,.18),rgba(14,10,8,.18)),var(--bgimg) center/cover no-repeat}
+#opWrap[hidden]{display:none}
+#opWrap input{width:110px;accent-color:var(--acc)}
+#opWrap output{min-width:38px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 20px;padding:16px max(4vw,16px);border-top:1px solid var(--line);font-size:13px;color:var(--mute)}
+.file{display:flex;flex-direction:column;line-height:1.25;margin-right:auto}
+.file strong{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:42vw}
+.file small{color:var(--mute);font-size:13px}
+.btn{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 14px;border-radius:9px;border:1px solid var(--line);background:var(--bg);font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--mute)}
+.btn.pri{background:var(--acc);color:var(--accInk);border-color:var(--acc)}
+.btn:disabled{opacity:.45;cursor:default}
+.app{display:grid;grid-template-columns:172px minmax(0,1fr);min-height:0}
+.pages{border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;min-height:0}
+.pages h2{font-size:13px;font-weight:600;margin:0;padding:12px 14px 6px;color:var(--mute)}
+#list{list-style:none;margin:0;padding:6px 14px 20px;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.pg{display:grid;gap:4px;justify-items:center}
+.pg button{border:2px solid transparent;padding:0;background:none;border-radius:4px;line-height:0;width:120px}
+.pg canvas{width:100%;height:auto;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.18);border-radius:2px}
+.pg.on button{border-color:var(--acc)}
+.pg span{font-size:13px;color:var(--mute)}
+.pg.drop button{outline:2px dashed var(--acc);outline-offset:4px}
+.work{display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-height:0}
+.bar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line)}
+.tools{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tool{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 10px;border-radius:8px;border:0;background:none;white-space:nowrap;font-size:14px}
+.tool:hover{background:var(--panel)}
+.tool[aria-pressed=true]{background:var(--acc);color:var(--accInk)}
+.props{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;font-size:13px;color:var(--mute)}
+.props label{display:inline-flex;align-items:center;gap:6px}
+.sw{width:26px;height:26px;border-radius:50%;border:2px solid var(--bg);box-shadow:0 0 0 1px var(--line);padding:0}
+.sw[aria-pressed=true]{box-shadow:0 0 0 2px var(--acc)}
+input[type=color]{width:30px;height:30px;border:1px solid var(--line);border-radius:8px;padding:2px;background:none}
+input[type=number]{width:62px;min-height:34px;border:1px solid var(--line);border-radius:7px;padding:0 6px;background:var(--bg);font-size:16px}
+select{min-height:34px;border:1px solid var(--line);border-radius:7px;background:var(--bg);padding:0 6px;font-size:14px}
+.tg{min-width:34px;min-height:34px;border:1px solid var(--line);border-radius:7px;background:var(--bg);font-weight:700}
+.tg[aria-pressed=true]{background:var(--acc);color:var(--accInk)}
+.ic{width:40px;height:40px;display:inline-grid;place-items:center;border:0;border-radius:8px;background:none}
+.ic:hover{background:var(--panel)}.ic:disabled{opacity:.35}
+.sep{width:1px;height:26px;background:var(--line)}
+.stage{background:var(--field);overflow:auto;display:grid;place-items:start center;padding:24px 20px 40px;position:relative}
+.sheet{position:relative;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.12),0 10px 30px -8px rgba(0,0,0,.28)}
+.sheet canvas{position:absolute;inset:0;width:100%;height:100%}
+#oc{touch-action:none}
+#ed{position:absolute;display:none;margin:0;padding:0;border:0;outline:1.5px dashed #2b6cff;background:rgba(255,255,255,.6);resize:none;overflow:hidden;line-height:1.25;white-space:pre;z-index:3}
+.hint{position:absolute;z-index:5;left:50%;transform:translateX(-50%);top:8px;font-size:13px;background:var(--bg);border:1px solid var(--line);padding:4px 10px;border-radius:20px;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
+.pager{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:6px 14px;border-top:1px solid var(--line);font-size:14px}
+.pager .n{min-width:120px;text-align:center;font-variant-numeric:tabular-nums}
+.pager .grow{flex:1}
+.empty{display:grid;place-items:center;text-align:center;gap:12px;padding:60px 20px;max-width:420px}
+.empty h3{font:700 30px/1.05 "Space Grotesk",sans-serif;margin:0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;place-items:center;z-index:20;padding:16px}
+.modal.on{display:grid}
+.box{background:var(--bg);border-radius:14px;padding:18px;width:min(640px,100%);display:grid;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.box h3{margin:0;font:700 22px/1.1 "Space Grotesk",sans-serif}
+#pad{width:100%;height:220px;background:#fff;border:1px dashed #9aa19d;border-radius:8px;touch-action:none}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row .grow{flex:1}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:30;max-width:90vw}
+#toast.on{opacity:1;transform:translateX(-50%)}
+.drag:after{content:"Lepaskan file PDF atau gambar di sini";position:fixed;inset:10px;border:3px dashed var(--acc);border-radius:16px;display:grid;place-items:center;background:color-mix(in srgb,var(--field) 85%,transparent);font:700 24px "Space Grotesk",sans-serif;z-index:40}
+@media(prefers-reduced-motion:reduce){#toast,.drop{transition:none}}
+@media(max-width:800px){.tool span{display:none}.tool{padding:0 9px}}
+@media(max-width:600px){
+ body{overflow:auto;display:block}
+ .app{display:flex;flex-direction:column}
+ .work{order:1}.pages{order:2;border-right:0;border-top:1px solid var(--line)}
+ .stage{height:64vh;padding:14px 10px 24px}
+ #list{flex-direction:row;overflow-x:auto;padding:6px 12px 14px}
+ .pg button{width:84px}
+ .file strong{max-width:60vw}
+ .top .btn .lb{display:none}
+ .badge{display:none!important}
+ .drop{min-height:260px}
+ .bar{flex-wrap:nowrap;flex-direction:column;align-items:stretch}
+ .tools{flex-wrap:nowrap}
+ .pager{justify-content:center}.pager .grow,.pager .sep{display:none}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <symbol id="i-sel" viewBox="0 0 24 24"><path d="M5 3l13 7.5-5.5 1.5L10 18z"/></symbol>
+ <symbol id="i-txt" viewBox="0 0 24 24"><path d="M5 7V5h14v2M12 5v14M9 19h6"/></symbol>
+ <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20l1-4L16 5l3 3L8 19zM14 7l3 3"/></symbol>
+ <symbol id="i-hl" viewBox="0 0 24 24"><path d="M7 14l8-10 4 3-8 10zM7 14l-1 4h4l1-1M4 21h16"/></symbol>
+ <symbol id="i-rect" viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="1"/></symbol>
+ <symbol id="i-white" viewBox="0 0 24 24"><path d="M4 20h16M6 16l7-11 6 4-7 11H8z"/></symbol>
+ <symbol id="i-img" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1.5"/><circle cx="16" cy="9.5" r="1.5"/><path d="M3 16l5-5 5 5 2-2 6 5"/></symbol>
+ <symbol id="i-sign" viewBox="0 0 24 24"><path d="M3 16c3-6 5-9 6-7s-2 7 0 7 3-5 5-5 1 4 3 4 2-2 4-2M3 20h18"/></symbol>
+ <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h11a5 5 0 010 10h-3"/></symbol>
+ <symbol id="i-redo" viewBox="0 0 24 24"><path d="M15 14l5-5-5-5M20 9H9a5 5 0 000 10h3"/></symbol>
+ <symbol id="i-rl" viewBox="0 0 24 24"><path d="M3 12a9 9 0 103-6.7L3 8M3 3v5h5"/></symbol>
+ <symbol id="i-rr" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-3-6.7L21 8M21 3v5h-5"/></symbol>
+ <symbol id="i-dup" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="1.5"/><path d="M4 16V5a1 1 0 011-1h11"/></symbol>
+ <symbol id="i-del" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></symbol>
+ <symbol id="i-new" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM12 10v6M9 13h6"/></symbol>
+ <symbol id="i-l" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+ <symbol id="i-r" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+ <symbol id="i-open" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></symbol>
+ <symbol id="i-merge" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+ <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol>
+ <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+</svg>
+
+<header class="top">
+ <h1 class="brand"><button id="bHome" class="brandbtn" title="Kembali ke halaman awal"><span class="mark">eC</span><span class="bt"><strong>ennCreative</strong><small>PDF Tools</small></span></button></h1>
+ <span class="vsep ed-only"></span>
+ <span class="grow home-only"></span>
+ <span class="badge home-only"><svg class="i"><use href="#i-lock"/></svg>File diproses di perangkat Anda</span>
+ <div class="file ed-only"><strong id="fname">Memuat…</strong><small id="fmeta">Semua proses berjalan di browser Anda, file tidak diunggah ke server.</small></div>
+ <div class="acts ed-only"><button class="btn" id="bOpen"><svg class="i"><use href="#i-open"/></svg><span class="lb">Buka PDF</span></button>
+ <button class="btn" id="bMerge"><svg class="i"><use href="#i-merge"/></svg><span class="lb">Gabung PDF</span></button>
+ <button class="btn pri" id="bSave"><svg class="i"><use href="#i-down"/></svg><span class="lb">Unduh PDF</span></button></div>
+ <input type="file" id="fPdf" accept="application/pdf,.pdf" multiple hidden>
+ <input type="file" id="fMerge" accept="application/pdf,.pdf" multiple hidden>
+ <input type="file" id="fImg" accept="image/png,image/jpeg,image/webp" hidden>
+</header>
+
+<section class="home" id="home" aria-labelledby="hT">
+ <div class="hwrap">
+  <div class="intro">
+   <h2 id="hT">Edit dokumen PDF langsung di browser</h2>
+   <p>Tambahkan teks dan tanda tangan, tandai bagian penting, lalu atur, putar, atau gabungkan halaman. Tanpa instalasi dan tanpa akun.</p>
+  </div>
+  <div class="drop" id="drop" role="button" tabindex="0" aria-label="Unggah dokumen PDF">
+   <svg class="doc" viewBox="0 0 96 112" aria-hidden="true"><path d="M14 6h46l24 24v72a6 6 0 01-6 6H14a6 6 0 01-6-6V12a6 6 0 016-6z" fill="#fff" stroke="currentColor" stroke-width="3"/><path d="M60 6v18a6 6 0 006 6h18" fill="none" stroke="currentColor" stroke-width="3"/><rect x="20" y="44" width="44" height="18" rx="4" fill="#f2a36b"/><text x="42" y="57.5" text-anchor="middle" font-family="Space Grotesk,Inter,sans-serif" font-weight="700" font-size="13" fill="#140d08">PDF</text><path d="M46 96V74M37 83l9-9 9 9" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+   <strong>Unggah dokumen PDF</strong>
+   <span class="dsub">Seret dan lepas file ke sini, atau</span>
+   <span class="btn pri big">Pilih file PDF</span>
+   <small>Hanya file .pdf. Pilih beberapa file sekaligus untuk langsung digabung.</small>
+  </div>
+  <div class="hlinks">
+   <button class="lnk" id="bResume" hidden>Lanjutkan mengedit dokumen sebelumnya</button>
+   <button class="lnk" id="bSample">Belum punya file? Coba dengan contoh dokumen</button>
+  </div>
+  <ul class="feats">
+   <li><span class="fi"><svg class="i"><use href="#i-txt"/></svg></span><div><strong>Tambah teks</strong><p>Isi formulir, beri catatan, pilih warna dan ukuran huruf.</p></div></li>
+   <li><span class="fi"><svg class="i"><use href="#i-sign"/></svg></span><div><strong>Tanda tangan</strong><p>Gambar tanda tangan sekali, tempel di mana saja.</p></div></li>
+   <li><span class="fi"><svg class="i"><use href="#i-merge"/></svg></span><div><strong>Gabung PDF</strong><p>Satukan beberapa file menjadi satu dokumen.</p></div></li>
+   <li><span class="fi"><svg class="i"><use href="#i-rr"/></svg></span><div><strong>Atur halaman</strong><p>Putar, urutkan ulang, duplikat, atau hapus halaman.</p></div></li>
+  </ul>
+ </div>
+ <footer class="foot"><span>&copy; 2026 ennCreative</span><span>PDF Tools &middot; Semua pemrosesan dilakukan di browser, file tidak dikirim ke server.</span></footer>
+</section>
+
+<div class="app">
+ <aside class="pages" aria-label="Daftar halaman">
+  <h2 id="pcount">Halaman</h2>
+  <ul id="list"></ul>
+ </aside>
+ <main class="work">
+  <div class="bar">
+   <div class="tools" role="toolbar" aria-label="Alat">
+    <button class="tool" data-tool="select" title="Pilih & pindahkan (V)"><svg class="i"><use href="#i-sel"/></svg><span>Pilih</span></button>
+    <button class="tool" data-tool="text" title="Tambah teks (T)"><svg class="i"><use href="#i-txt"/></svg><span>Teks</span></button>
+    <button class="tool" data-tool="pen" title="Pena (P)"><svg class="i"><use href="#i-pen"/></svg><span>Pena</span></button>
+    <button class="tool" data-tool="hl" title="Stabilo (H)"><svg class="i"><use href="#i-hl"/></svg><span>Stabilo</span></button>
+    <button class="tool" data-tool="rect" title="Kotak (R)"><svg class="i"><use href="#i-rect"/></svg><span>Kotak</span></button>
+    <button class="tool" data-tool="white" title="Tutup putih (W)"><svg class="i"><use href="#i-white"/></svg><span>Tutup putih</span></button>
+    <button class="tool" id="bImg" title="Sisipkan gambar"><svg class="i"><use href="#i-img"/></svg><span>Gambar</span></button>
+    <button class="tool" id="bSign" title="Tanda tangan"><svg class="i"><use href="#i-sign"/></svg><span>Tanda tangan</span></button>
+   </div>
+   <div class="props">
+    <span id="sws"></span>
+    <input type="color" id="pColor" value="#111111" aria-label="Warna lain">
+    <label>Huruf <input type="number" id="pSize" min="6" max="120" value="16"></label>
+    <select id="pFont" aria-label="Jenis huruf" style="max-width:170px"></select>
+    <button class="tg" id="pBold" aria-pressed="false" title="Tebal">B</button>
+    <label>Garis <input type="number" id="pWidth" min="1" max="30" value="2"></label>
+    <label id="opWrap" hidden>Transparansi <input type="range" id="pOp" min="5" max="100" step="5" value="100" aria-label="Transparansi gambar"><output id="opV">100%</output></label>
+    <span class="sep"></span>
+    <button class="ic" id="bUndo" title="Batalkan (Ctrl+Z)" aria-label="Batalkan"><svg class="i"><use href="#i-undo"/></svg></button>
+    <button class="ic" id="bRedo" title="Ulangi (Ctrl+Y)" aria-label="Ulangi"><svg class="i"><use href="#i-redo"/></svg></button>
+    <button class="ic" id="bDelObj" title="Hapus objek terpilih (Delete)" aria-label="Hapus objek"><svg class="i"><use href="#i-del"/></svg></button>
+   </div>
+  </div>
+  <div class="stage" id="stage">
+   <div class="hint" id="hint" hidden></div>
+   <div class="sheet" id="sheet"><canvas id="pc"></canvas><canvas id="oc"></canvas><textarea id="ed" spellcheck="false" aria-label="Isi teks"></textarea></div>
+  </div>
+  <div class="pager">
+   <button class="ic" id="bPrev" aria-label="Halaman sebelumnya"><svg class="i"><use href="#i-l"/></svg></button>
+   <span class="n" id="pnum">–</span>
+   <button class="ic" id="bNext" aria-label="Halaman berikutnya"><svg class="i"><use href="#i-r"/></svg></button>
+   <span class="sep"></span>
+   <button class="ic" id="zOut" aria-label="Perkecil">−</button><span id="zv" style="min-width:44px;text-align:center">100%</span><button class="ic" id="zIn" aria-label="Perbesar">+</button>
+   <span class="grow"></span>
+   <button class="ic" id="pRL" title="Putar ke kiri" aria-label="Putar ke kiri"><svg class="i"><use href="#i-rl"/></svg></button>
+   <button class="ic" id="pRR" title="Putar ke kanan" aria-label="Putar ke kanan"><svg class="i"><use href="#i-rr"/></svg></button>
+   <button class="ic" id="pML" title="Geser halaman ke depan" aria-label="Geser ke depan"><svg class="i"><use href="#i-l"/></svg></button>
+   <button class="ic" id="pMR" title="Geser halaman ke belakang" aria-label="Geser ke belakang"><svg class="i"><use href="#i-r"/></svg></button>
+   <button class="ic" id="pDup" title="Duplikat halaman" aria-label="Duplikat halaman"><svg class="i"><use href="#i-dup"/></svg></button>
+   <button class="ic" id="pNew" title="Sisipkan halaman kosong" aria-label="Halaman kosong"><svg class="i"><use href="#i-new"/></svg></button>
+   <button class="ic" id="pDel" title="Hapus halaman" aria-label="Hapus halaman"><svg class="i"><use href="#i-del"/></svg></button>
+   <button class="btn" id="bSaveOne" title="Unduh hanya halaman ini">Unduh halaman ini</button>
+  </div>
+ </main>
+</div>
+
+<div class="modal" id="mSign" role="dialog" aria-modal="true" aria-labelledby="sgT">
+ <div class="box">
+  <h3 id="sgT">Buat tanda tangan</h3>
+  <canvas id="pad"></canvas>
+  <div class="row">
+   <span style="font-size:13px;color:var(--mute)">Tanda tangani di area putih dengan mouse atau jari.</span>
+   <span class="grow"></span>
+   <button class="btn" id="sgClr">Bersihkan</button>
+   <button class="btn" id="sgNo">Batal</button>
+   <button class="btn pri" id="sgOk">Pakai</button>
+  </div>
+ </div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script>
+{
+const $=s=>document.querySelector(s);
+const pc=$('#pc'),oc=$('#oc'),octx=oc.getContext('2d'),ed=$('#ed'),sheet=$('#sheet'),stage=$('#stage'),list=$('#list');
+let srcs=[],pages=[],cur=0,tool='select',sel=-1,zoom=1,S=1,uid=1,fileName='dokumen.pdf',editing=-1,act=null;
+let undo=[],redo=[];
+const imgs={};
+const st={color:'#111111',hl:'#ffe14d',size:16,width:2,font:'sans',bold:false};
+const COLORS=['#111111','#1d4ed8','#d11a2a','#0f8a4b'],HLS=['#ffe14d','#7df0a8','#7cc8ff','#ff9ccf'];
+const TW=120;
+const toastEl=$('#toast');let tt;
+function toast(m){toastEl.textContent=m;toastEl.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>toastEl.classList.remove('on'),2600)}
+const ok=window.PDFLib&&window.pdfjsLib;
+if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+/* ---------- util ---------- */
+const dims=p=>p.rot%180?[p.h0,p.w0]:[p.w0,p.h0];
+const dpr=()=>window.devicePixelRatio||1;
+const mctx=document.createElement('canvas').getContext('2d');
+const FONTS=[
+ ['Sans-serif',[['sans','Arial / Helvetica','Helvetica,Arial,sans-serif'],['Inter','Inter'],['Roboto','Roboto'],['Open Sans','Open Sans'],['Montserrat','Montserrat'],['Poppins','Poppins'],['Lato','Lato'],['Nunito','Nunito'],['Raleway','Raleway']]],
+ ['Judul / tegas',[['Oswald','Oswald'],['Bebas Neue','Bebas Neue']]],
+ ['Serif',[['serif','Times / Georgia','Georgia,"Times New Roman",serif'],['Playfair Display','Playfair Display','"Playfair Display",serif'],['Merriweather','Merriweather','Merriweather,serif'],['Lora','Lora','Lora,serif'],['Libre Baskerville','Libre Baskerville','"Libre Baskerville",serif'],['EB Garamond','EB Garamond','"EB Garamond",serif']]],
+ ['Tulisan tangan',[['Dancing Script','Dancing Script','"Dancing Script",cursive'],['Great Vibes','Great Vibes','"Great Vibes",cursive'],['Pacifico','Pacifico','Pacifico,cursive'],['Caveat','Caveat','Caveat,cursive'],['Satisfy','Satisfy','Satisfy,cursive'],['Sacramento','Sacramento','Sacramento,cursive']]],
+ ['Monospace',[['mono','Courier New','"Courier New",monospace'],['Courier Prime','Courier Prime','"Courier Prime",monospace'],['Source Code Pro','Source Code Pro','"Source Code Pro",monospace']]]];
+const FAM={};FONTS.forEach(([,l])=>l.forEach(([id,,css])=>FAM[id]=css||('"'+id+'",sans-serif')));
+function fontOf(a,k=1){return (a.b?'700 ':'400 ')+(a.z*k)+'px '+(FAM[a.f]||FAM.sans)}
+function ensureFont(a){try{return document.fonts.load(fontOf(a)).catch(()=>{})}catch(e){return Promise.resolve()}}
+function bbox(a){
+ if(a.p){let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;for(const[x,y]of a.p){if(x<x1)x1=x;if(y<y1)y1=y;if(x>x2)x2=x;if(y>y2)y2=y}const m=a.lw/2;return{x:x1-m,y:y1-m,w:x2-x1+2*m,h:y2-y1+2*m}}
+ if(a.t==='text'){mctx.font=fontOf(a);const ls=a.s.split('\n');const w=Math.max(a.z*.5,...ls.map(l=>mctx.measureText(l).width));return{x:a.x,y:a.y,w,h:ls.length*a.z*1.25}}
+ return{x:Math.min(a.x,a.x+a.w),y:Math.min(a.y,a.y+a.h),w:Math.abs(a.w),h:Math.abs(a.h)}}
+function paint(ctx,ann,k,skip){
+ ann.forEach((a,i)=>{if(i===skip)return;ctx.save();ctx.setTransform(k,0,0,k,0,0);
+  if(a.t==='white'){ctx.fillStyle='#ffffff';ctx.fillRect(a.x,a.y,a.w,a.h)}
+  else if(a.t==='rect'){ctx.strokeStyle=a.c;ctx.lineWidth=a.lw;ctx.strokeRect(a.x,a.y,a.w,a.h)}
+  else if(a.p){ctx.strokeStyle=a.c;ctx.lineWidth=a.lw;ctx.lineCap='round';ctx.lineJoin='round';if(a.t==='hl')ctx.globalAlpha=.38;
+   ctx.beginPath();a.p.forEach((q,j)=>j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));if(a.p.length===1)ctx.lineTo(a.p[0][0]+.1,a.p[0][1]);ctx.stroke()}
+  else if(a.t==='text'){ctx.fillStyle=a.c;ctx.font=fontOf(a);ctx.textBaseline='top';a.s.split('\n').forEach((l,j)=>ctx.fillText(l,a.x,a.y+j*a.z*1.25+a.z*.1))}
+  else if(a.t==='img'){const im=imgs[a.img];if(im&&im.complete){ctx.globalAlpha=a.o==null?1:a.o;ctx.drawImage(im,a.x,a.y,a.w,a.h)}}
+  ctx.restore()})}
+function loadImg(id,url){return new Promise(r=>{const im=new Image();im.onload=()=>r(im);im.onerror=()=>r(null);im.src=url;imgs[id]=im})}
+
+/* ---------- history ---------- */
+const snap=()=>JSON.stringify({pages,cur});
+function save(){undo.push(snap());if(undo.length>100)undo.shift();redo=[];updUndo()}
+function restore(s){const o=JSON.parse(s);pages=o.pages;cur=Math.max(0,Math.min(o.cur,pages.length-1));sel=-1;$('#opWrap').hidden=true;refresh()}
+function doUndo(){commitText();if(!undo.length)return;redo.push(snap());restore(undo.pop())}
+function doRedo(){commitText();if(!redo.length)return;undo.push(snap());restore(redo.pop())}
+function updUndo(){$('#bUndo').disabled=!undo.length;$('#bRedo').disabled=!redo.length;$('#bDelObj').disabled=sel<0}
+
+/* ---------- loading ---------- */
+function showHome(on){if(!on)commitText();document.body.classList.toggle('home',on);$('#bResume').hidden=!pages.length;if(!on)requestAnimationFrame(refresh)}
+async function addPdf(buf,name,append){
+ const bytes=new Uint8Array(buf);
+ let doc;
+ try{doc=await pdfjsLib.getDocument({data:bytes.slice(),isEvalSupported:false}).promise}
+ catch(e){toast(e&&e.name==='PasswordException'?'PDF ini dikunci kata sandi dan tidak bisa dibuka.':'File ini tidak bisa dibaca sebagai PDF.');return}
+ const si=srcs.length;srcs.push({doc,bytes,name,lib:null});
+ const np=[];
+ for(let i=0;i<doc.numPages;i++){const pg=await doc.getPage(i+1);const vp=pg.getViewport({scale:1});np.push({id:uid++,src:si,idx:i,rot:0,w0:vp.width,h0:vp.height,ann:[]})}
+ commitText();
+ if(append){save();const at=pages.length;pages=pages.concat(np);cur=at;toast(np.length+' halaman dari "'+name+'" ditambahkan')}
+ else{pages=np;cur=0;undo=[];redo=[];fileName=name;$('#fmeta').textContent='Semua proses berjalan di browser Anda, file tidak diunggah ke server.'}
+ sel=-1;document.body.classList.remove('home');refresh();return true;
+}
+async function readFile(f){return await f.arrayBuffer()}
+async function openFiles(files,append){
+ const arr=[...files];let first=!append;
+ for(const f of arr){
+  if(f.type==='application/pdf'||/\.pdf$/i.test(f.name)){await addPdf(await readFile(f),f.name,!first);first=false}
+  else if(/^image\//.test(f.type)){if(pages.length)addImageFile(f)}
+ }
+}
+
+/* ---------- rendering ---------- */
+let rtoken=0,rtask=null;
+async function renderMain(){
+ const p=pages[cur];const tk=++rtoken;
+ if(!p){sheet.hidden=true;return}sheet.hidden=false;
+ const[W,H]=dims(p);
+ const avail=Math.max(160,stage.clientWidth-40);
+ S=Math.min(avail/W,1.6)*zoom;
+ const k=S*dpr();
+ sheet.style.width=Math.round(W*S)+'px';sheet.style.height=Math.round(H*S)+'px';
+ oc.width=Math.round(W*k);oc.height=Math.round(H*k);
+ drawOverlay();placeEditor();
+ const off=document.createElement('canvas');off.width=oc.width;off.height=oc.height;const ox=off.getContext('2d');ox.fillStyle='#fff';ox.fillRect(0,0,off.width,off.height);
+ if(p.src>=0){
+  if(rtask){try{rtask.cancel()}catch(e){}}
+  const pg=await srcs[p.src].doc.getPage(p.idx+1);if(tk!==rtoken)return;
+  const vp=pg.getViewport({scale:k,rotation:(pg.rotate+p.rot)%360});
+  rtask=pg.render({canvasContext:ox,viewport:vp});
+  try{await rtask.promise}catch(e){return}
+  if(tk!==rtoken)return;
+ }
+ pc.width=off.width;pc.height=off.height;pc.getContext('2d').drawImage(off,0,0);
+ $('#zv').textContent=Math.round(zoom*100)+'%';
+}
+function drawOverlay(){
+ const p=pages[cur];if(!p)return;const k=S*dpr();
+ octx.setTransform(1,0,0,1,0,0);octx.clearRect(0,0,oc.width,oc.height);
+ paint(octx,p.ann,k,editing);
+ if(sel>=0&&p.ann[sel]&&sel!==editing){const b=bbox(p.ann[sel]);const m=3/S;
+  octx.setTransform(k,0,0,k,0,0);octx.lineWidth=1.2/S;octx.strokeStyle='#2b6cff';octx.setLineDash([5/S,4/S]);octx.strokeRect(b.x-m,b.y-m,b.w+2*m,b.h+2*m);octx.setLineDash([]);
+  if(!p.ann[sel].p){const hs=9/S;octx.fillStyle='#fff';octx.fillRect(b.x+b.w+m-hs/2,b.y+b.h+m-hs/2,hs,hs);octx.strokeRect(b.x+b.w+m-hs/2,b.y+b.h+m-hs/2,hs,hs)}}
+ updUndo();
+}
+
+/* thumbnails */
+const baseCache=new Map();
+async function baseThumb(p){
+ const key=[p.src,p.idx,p.rot,p.w0,p.h0].join(':');if(baseCache.has(key))return baseCache.get(key);
+ const[W,H]=dims(p);const k=TW*dpr()/W;const c=document.createElement('canvas');c.width=Math.round(W*k);c.height=Math.round(H*k);
+ const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
+ if(p.src>=0){const pg=await srcs[p.src].doc.getPage(p.idx+1);await pg.render({canvasContext:x,viewport:pg.getViewport({scale:k,rotation:(pg.rotate+p.rot)%360})}).promise}
+ const r={c,k};baseCache.set(key,r);return r}
+async function drawThumb(p){const el=list.querySelector('canvas[data-t="'+p.id+'"]');if(!el)return;const b=await baseThumb(p);el.width=b.c.width;el.height=b.c.height;const x=el.getContext('2d');x.drawImage(b.c,0,0);paint(x,p.ann,b.k,-1)}
+let tq=Promise.resolve();
+function drawThumbs(only){const ps=only?[only]:pages.slice();tq=tq.then(async()=>{for(const p of ps){try{await drawThumb(p)}catch(e){}}})}
+function renderList(){
+ list.innerHTML=pages.map((p,i)=>'<li class="pg'+(i===cur?' on':'')+'" draggable="true" data-i="'+i+'"><button data-i="'+i+'" aria-label="Halaman '+(i+1)+'"><canvas data-t="'+p.id+'"></canvas></button><span>'+(i+1)+'</span></li>').join('');
+ const cur_el=list.querySelector('.pg.on');if(cur_el)cur_el.scrollIntoView({block:'nearest',inline:'nearest'});
+}
+function updPager(){
+ const n=pages.length;$('#pnum').textContent=n?('Halaman '+(cur+1)+' dari '+n):'–';
+ $('#pcount').textContent='Halaman ('+n+')';
+ $('#fname').textContent=fileName;
+ $('#bPrev').disabled=cur<=0;$('#bNext').disabled=cur>=n-1;$('#pML').disabled=cur<=0;$('#pMR').disabled=cur>=n-1;$('#pDel').disabled=n<=1;
+}
+function refresh(){renderList();updPager();renderMain();drawThumbs()}
+function go(i){if(i<0||i>=pages.length||i===cur)return;commitText();cur=i;sel=-1;renderList();updPager();renderMain();drawThumbs()}
+
+/* ---------- tools & props ---------- */
+const hints={text:'Klik di halaman untuk menulis. Klik teks yang ada untuk mengubahnya.',pen:'Tarik untuk menggambar bebas.',hl:'Tarik di atas tulisan untuk menandainya.',rect:'Tarik untuk membuat kotak.',white:'Tarik untuk menutupi bagian halaman. Catatan: teks asli di bawahnya hanya tertutup secara visual.',select:'Klik objek untuk memilih, tarik untuk memindah, tarik sudut kanan bawah untuk mengubah ukuran.'};
+function setTool(t){commitText();tool=t;document.querySelectorAll('.tool[data-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tool===t));
+ oc.style.cursor=t==='select'?'default':t==='text'?'text':'crosshair';if(t!=='select'){sel=-1;drawOverlay()}$('#opWrap').hidden=true;
+ const h=$('#hint');h.textContent=hints[t]||'';h.hidden=!hints[t];clearTimeout(h._t);h._t=setTimeout(()=>h.hidden=true,4500);renderSw()}
+document.querySelectorAll('.tool[data-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
+function curColor(){const a=selA();if(a&&a.c)return a.c;return tool==='hl'?st.hl:st.color}
+function renderSw(){const hlMode=tool==='hl'||(selA()&&selA().t==='hl');const cs=hlMode?HLS:COLORS;const c=curColor();
+ $('#sws').innerHTML=cs.map(x=>'<button class="sw" data-c="'+x+'" style="background:'+x+'" aria-label="Warna '+x+'" aria-pressed="'+(x===c)+'"></button>').join(' ');
+ $('#pColor').value=c;}
+$('#sws').onclick=e=>{const b=e.target.closest('.sw');if(b)setColor(b.dataset.c)};
+$('#pColor').oninput=e=>setColor(e.target.value);
+function selA(){const p=pages[cur];return p&&sel>=0?p.ann[sel]:null}
+function setColor(c){const a=selA();if(a&&a.c!==undefined){save();a.c=c;drawOverlay();drawThumbs(pages[cur])}else if(tool==='hl')st.hl=c;else st.color=c;if(ed.style.display==='block'){ed._a.c=c;ed.style.color=c}renderSw()}
+$('#pSize').onchange=e=>{const v=Math.max(6,Math.min(120,+e.target.value||16));st.size=v;const a=selA();if(a&&a.t==='text'){save();a.z=v;drawOverlay();drawThumbs(pages[cur])}if(ed.style.display==='block'){ed._a.z=v;placeEditor()}};
+$('#pWidth').onchange=e=>{const v=Math.max(1,Math.min(30,+e.target.value||2));st.width=v;const a=selA();if(a&&a.lw!==undefined){save();a.lw=a.t==='hl'?v*5:v;drawOverlay();drawThumbs(pages[cur])}};
+const pFont=$('#pFont');
+pFont.innerHTML=FONTS.map(([g,l])=>'<optgroup label="'+g+'">'+l.map(([id,name])=>'<option value="'+id+'" style="font-family:'+FAM[id].replace(/"/g,"'")+'">'+name+'</option>').join('')+'</optgroup>').join('');
+pFont.onchange=e=>{st.font=e.target.value;const a=selA();const t=a&&a.t==='text'?a:null;if(t){save();t.f=st.font}if(ed.style.display==='block'){ed._a.f=st.font;placeEditor()}
+ ensureFont({f:st.font,z:16,b:st.bold}).then(()=>{drawOverlay();placeEditor();if(t)drawThumbs(pages[cur])});drawOverlay()};
+const pOp=$('#pOp');let opSaved=false;
+pOp.addEventListener('input',()=>{const a=selA();if(!a||a.t!=='img')return;if(!opSaved){save();opSaved=true}a.o=+pOp.value/100;$('#opV').textContent=pOp.value+'%';drawOverlay()});
+pOp.addEventListener('change',()=>{opSaved=false;drawThumbs(pages[cur])});
+try{document.fonts.addEventListener('loadingdone',()=>{drawOverlay();drawThumbs()})}catch(e){}
+$('#pBold').onclick=()=>{st.bold=!st.bold;$('#pBold').setAttribute('aria-pressed',st.bold);const a=selA();if(a&&a.t==='text'){save();a.b=st.bold;drawOverlay();drawThumbs(pages[cur])}if(ed.style.display==='block'){ed._a.b=st.bold;placeEditor()}};
+function syncProps(){const a=selA();const isImg=!!(a&&a.t==='img');$('#opWrap').hidden=!isImg;if(isImg){const v=Math.round((a.o==null?1:a.o)*100);pOp.value=v;$('#opV').textContent=v+'%'}
+ if(!a){renderSw();updUndo();return}
+ if(a.t==='text'){$('#pSize').value=a.z;$('#pFont').value=a.f;$('#pBold').setAttribute('aria-pressed',!!a.b);st.bold=!!a.b}
+ if(a.lw)$('#pWidth').value=a.t==='hl'?Math.round(a.lw/5):a.lw;renderSw();updUndo()}
+
+/* ---------- pointer on page ---------- */
+function pt(e){const r=oc.getBoundingClientRect();return[(e.clientX-r.left)/S,(e.clientY-r.top)/S]}
+function hit(p,x,y){const m=5/S;for(let i=p.ann.length-1;i>=0;i--){const b=bbox(p.ann[i]);if(x>=b.x-m&&x<=b.x+b.w+m&&y>=b.y-m&&y<=b.y+b.h+m)return i}return -1}
+oc.addEventListener('pointerdown',e=>{
+ const p=pages[cur];if(!p)return;
+ if(ed.style.display==='block'){commitText();if(tool==='text')return}
+ const[x,y]=pt(e);try{oc.setPointerCapture(e.pointerId)}catch(_){}
+ if(tool==='select'){
+  if(sel>=0&&p.ann[sel]&&!p.ann[sel].p){const b=bbox(p.ann[sel]),m=3/S,hs=14/S;
+   if(Math.abs(x-(b.x+b.w+m))<hs&&Math.abs(y-(b.y+b.h+m))<hs){save();act={m:'resize',a:p.ann[sel],b,x,y,o:JSON.parse(JSON.stringify(p.ann[sel]))};return}}
+  const i=hit(p,x,y);sel=i;if(i>=0){save();act={m:'move',a:p.ann[i],x,y,moved:false}}
+  syncProps();drawOverlay();return}
+ if(tool==='text'){e.preventDefault();const i=hit(p,x,y);if(i>=0&&p.ann[i].t==='text')openEditor(i);else openEditor(-1,x,y);return}
+ save();
+ if(tool==='pen'||tool==='hl'){const a={t:tool,c:tool==='hl'?st.hl:st.color,lw:tool==='hl'?st.width*5:st.width,p:[[+x.toFixed(1),+y.toFixed(1)]]};p.ann.push(a);act={m:'draw',a}}
+ else{const a={t:tool,c:st.color,lw:st.width,x,y,w:0,h:0};p.ann.push(a);act={m:'box',a}}
+ drawOverlay();
+});
+oc.addEventListener('pointermove',e=>{
+ if(!act)return;const[x,y]=pt(e);const a=act.a;
+ if(act.m==='draw')a.p.push([+x.toFixed(1),+y.toFixed(1)]);
+ else if(act.m==='box'){a.w=x-a.x;a.h=y-a.y}
+ else if(act.m==='move'){const dx=x-act.x,dy=y-act.y;act.x=x;act.y=y;if(dx||dy)act.moved=true;if(a.p)a.p.forEach(q=>{q[0]+=dx;q[1]+=dy});else{a.x+=dx;a.y+=dy}}
+ else if(act.m==='resize'){const o=act.o,b=act.b;const nw=Math.max(8,b.w+(x-act.x));
+  if(a.t==='img'){a.w=nw;a.h=nw*o.h/o.w}else if(a.t==='text'){a.z=Math.max(5,+(o.z*nw/b.w).toFixed(1))}else{a.w=nw;a.h=Math.max(6,b.h+(y-act.y))}}
+ drawOverlay();
+});
+function endAct(){
+ if(!act)return;const a=act.a,p=pages[cur];
+ if(act.m==='box'){if(a.w<0){a.x+=a.w;a.w=-a.w}if(a.h<0){a.y+=a.h;a.h=-a.h}if(a.w<3||a.h<3){p.ann.pop();undo.pop()}}
+ if(act.m==='move'&&!act.moved)undo.pop();
+ if(act.m==='resize'&&a.t==='text')$('#pSize').value=Math.round(a.z);
+ act=null;drawOverlay();drawThumbs(p);
+}
+oc.addEventListener('pointerup',endAct);oc.addEventListener('pointercancel',endAct);
+
+/* ---------- text editor ---------- */
+function openEditor(i,x,y){
+ const p=pages[cur];let a;
+ if(i>=0){a=p.ann[i];editing=i;sel=i}
+ else{a={t:'text',x:x,y:Math.max(0,y-st.size*.65),s:'',z:st.size,c:st.color,f:st.font,b:st.bold};editing=-2}
+ ed._a=a;ed.value=a.s;ed.style.display='block';placeEditor();drawOverlay();ed.focus({preventScroll:true});setTimeout(()=>ed.focus({preventScroll:true}),0)}
+function placeEditor(){
+ if(ed.style.display!=='block')return;const a=ed._a;
+ ed.style.font=fontOf(a,S);ed.style.color=a.c;ed.style.left=(a.x*S)+'px';ed.style.top=(a.y*S)+'px';
+ mctx.font=fontOf(a,S);const ls=(ed.value||' ').split('\n');
+ ed.style.width=Math.max(40,...ls.map(l=>mctx.measureText(l).width))+a.z*S+'px';ed.style.height=(ls.length*a.z*S*1.25+4)+'px'}
+ed.addEventListener('input',placeEditor);
+ed.addEventListener('keydown',e=>{if(e.key==='Escape'||(e.key==='Enter'&&(e.ctrlKey||e.metaKey))){e.preventDefault();commitText()}e.stopPropagation()});
+ed.addEventListener('blur',()=>setTimeout(commitText,0));
+function commitText(){
+ if(ed.style.display!=='block')return;const p=pages[cur];const a=ed._a;const v=ed.value.replace(/\s+$/,'');ed.style.display='none';
+ if(editing===-2){if(v){save();a.s=v;p.ann.push(a);sel=p.ann.length-1}}
+ else if(editing>=0&&v!==a.s){save();if(v)a.s=v;else{p.ann.splice(editing,1);sel=-1}}
+ editing=-1;drawOverlay();drawThumbs(p)}
+
+/* ---------- objects ---------- */
+function delObj(){const p=pages[cur];if(!p||sel<0)return;save();p.ann.splice(sel,1);sel=-1;$('#opWrap').hidden=true;drawOverlay();drawThumbs(p)}
+$('#bDelObj').onclick=delObj;$('#bUndo').onclick=doUndo;$('#bRedo').onclick=doRedo;
+function addImage(url,targetW){
+ const p=pages[cur];if(!p)return;const id='im'+(uid++);
+ loadImg(id,url).then(im=>{if(!im){toast('Gambar tidak bisa dimuat.');return}
+  const[W,H]=dims(p);let w=Math.min(targetW||W*.4,im.naturalWidth),h=w*im.naturalHeight/im.naturalWidth;
+  if(h>H*.6){h=H*.6;w=h*im.naturalWidth/im.naturalHeight}
+  save();p.ann.push({t:'img',img:id,x:(W-w)/2,y:(H-h)/2,w,h,o:1});setTool('select');sel=p.ann.length-1;syncProps();drawOverlay();drawThumbs(p);toast('Tarik gambar ke posisi yang diinginkan')})}
+function addImageFile(f){const r=new FileReader();r.onload=()=>addImage(r.result);r.readAsDataURL(f)}
+$('#bImg').onclick=()=>{if(pages.length)$('#fImg').click()};
+$('#fImg').onchange=e=>{const f=e.target.files[0];if(f)addImageFile(f);e.target.value=''};
+
+/* signature pad */
+const pad=$('#pad'),pctx=pad.getContext('2d');let pdraw=false,pstrokes=[];
+function sizePad(){const r=pad.getBoundingClientRect();pad.width=r.width*dpr();pad.height=r.height*dpr();redrawPad()}
+function redrawPad(){pctx.setTransform(dpr(),0,0,dpr(),0,0);pctx.clearRect(0,0,pad.width,pad.height);pctx.strokeStyle=st.color==='#111111'?'#0b1f66':st.color;pctx.lineWidth=2.6;pctx.lineCap='round';pctx.lineJoin='round';
+ for(const s of pstrokes){pctx.beginPath();s.forEach((q,j)=>j?pctx.lineTo(q[0],q[1]):pctx.moveTo(q[0],q[1]));if(s.length===1)pctx.lineTo(s[0][0]+.1,s[0][1]);pctx.stroke()}}
+const pp=e=>{const r=pad.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
+pad.onpointerdown=e=>{pdraw=true;pad.setPointerCapture(e.pointerId);pstrokes.push([pp(e)]);redrawPad()};
+pad.onpointermove=e=>{if(!pdraw)return;pstrokes[pstrokes.length-1].push(pp(e));redrawPad()};
+pad.onpointerup=pad.onpointercancel=()=>pdraw=false;
+$('#bSign').onclick=()=>{if(!pages.length)return;commitText();pstrokes=[];$('#mSign').classList.add('on');sizePad()};
+$('#sgClr').onclick=()=>{pstrokes=[];redrawPad()};
+$('#sgNo').onclick=()=>$('#mSign').classList.remove('on');
+$('#sgOk').onclick=()=>{
+ if(!pstrokes.length){toast('Tanda tangan masih kosong');return}
+ let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;for(const s of pstrokes)for(const[x,y]of s){x1=Math.min(x1,x);y1=Math.min(y1,y);x2=Math.max(x2,x);y2=Math.max(y2,y)}
+ const m=4,d=dpr(),w=(x2-x1+2*m),h=(y2-y1+2*m);const c=document.createElement('canvas');c.width=Math.round(w*d*2);c.height=Math.round(h*d*2);
+ c.getContext('2d').drawImage(pad,(x1-m)*d,(y1-m)*d,w*d,h*d,0,0,c.width,c.height);
+ $('#mSign').classList.remove('on');addImage(c.toDataURL('image/png'),Math.min(180,w*.8))};
+
+/* ---------- page operations ---------- */
+function rot90(a,W,H){
+ if(a.p){a.p=a.p.map(([x,y])=>[H-y,x]);return}
+ if(a.t==='rect'||a.t==='white'){const nx=H-(a.y+a.h),ny=a.x;const w=a.w;a.x=nx;a.y=ny;a.w=a.h;a.h=w;return}
+ const b=bbox(a),cx=b.x+b.w/2,cy=b.y+b.h/2;a.x=(H-cy)-b.w/2;a.y=cx-b.h/2}
+function rotatePage(dir){const p=pages[cur];if(!p)return;commitText();save();const n=dir>0?1:3;for(let t=0;t<n;t++){const[W,H]=dims(p);p.ann.forEach(a=>rot90(a,W,H));p.rot=(p.rot+90)%360}sel=-1;refresh()}
+function movePage(from,to){if(to<0||to>=pages.length||from===to)return;commitText();save();const[p]=pages.splice(from,1);pages.splice(to,0,p);cur=to;sel=-1;refresh()}
+$('#pRL').onclick=()=>rotatePage(-1);$('#pRR').onclick=()=>rotatePage(1);
+$('#pML').onclick=()=>movePage(cur,cur-1);$('#pMR').onclick=()=>movePage(cur,cur+1);
+$('#pDup').onclick=()=>{const p=pages[cur];if(!p)return;commitText();save();const c=JSON.parse(JSON.stringify(p));c.id=uid++;pages.splice(cur+1,0,c);cur++;sel=-1;refresh();toast('Halaman diduplikat')};
+$('#pNew').onclick=()=>{const p=pages[cur];commitText();save();const[W,H]=p?dims(p):[595.28,841.89];pages.splice(cur+1,0,{id:uid++,src:-1,idx:0,rot:0,w0:W,h0:H,ann:[]});cur=pages.length>1?cur+1:0;sel=-1;refresh();toast('Halaman kosong disisipkan')};
+$('#pDel').onclick=()=>{if(pages.length<=1){toast('Dokumen harus punya minimal 1 halaman');return}commitText();save();pages.splice(cur,1);cur=Math.min(cur,pages.length-1);sel=-1;refresh();toast('Halaman dihapus. Tekan Batalkan untuk mengembalikan.')};
+$('#bPrev').onclick=()=>go(cur-1);$('#bNext').onclick=()=>go(cur+1);
+$('#zIn').onclick=()=>{zoom=Math.min(3,+(zoom+.25).toFixed(2));renderMain()};
+$('#zOut').onclick=()=>{zoom=Math.max(.5,+(zoom-.25).toFixed(2));renderMain()};
+list.addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(b)go(+b.dataset.i)});
+let dragFrom=-1;
+list.addEventListener('dragstart',e=>{const li=e.target.closest('.pg');if(!li)return;dragFrom=+li.dataset.i;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain','pg')});
+list.addEventListener('dragover',e=>{if(dragFrom<0)return;e.preventDefault();e.stopPropagation();list.querySelectorAll('.drop').forEach(x=>x.classList.remove('drop'));const li=e.target.closest('.pg');if(li)li.classList.add('drop')});
+list.addEventListener('drop',e=>{if(dragFrom<0)return;e.preventDefault();e.stopPropagation();const li=e.target.closest('.pg');const f=dragFrom;dragFrom=-1;if(li)movePage(f,+li.dataset.i);else renderList(),drawThumbs()});
+list.addEventListener('dragend',()=>{dragFrom=-1;list.querySelectorAll('.drop').forEach(x=>x.classList.remove('drop'))});
+
+/* ---------- export ---------- */
+async function buildPdf(sel){
+ await Promise.all(sel.flatMap(p=>p.ann.filter(a=>a.t==='text')).map(ensureFont));
+ const{PDFDocument,degrees}=PDFLib;const out=await PDFDocument.create();
+ for(const p of sel){
+  let page,orig=0;
+  if(p.src<0){page=out.addPage([p.w0,p.h0])}
+  else{const s=srcs[p.src];if(!s.lib)s.lib=await PDFDocument.load(s.bytes,{ignoreEncryption:true});[page]=await out.copyPages(s.lib,[p.idx]);out.addPage(page);orig=page.getRotation().angle||0}
+  const r=(((orig+p.rot)%360)+360)%360;page.setRotation(degrees(r));
+  if(p.ann.length){
+   const[W,H]=dims(p);const k=Math.min(3.5,3200/Math.max(W,H));const c=document.createElement('canvas');c.width=Math.round(W*k);c.height=Math.round(H*k);
+   paint(c.getContext('2d'),p.ann,k,-1);
+   const blob=await new Promise(res=>c.toBlob(res,'image/png'));const png=await out.embedPng(new Uint8Array(await blob.arrayBuffer()));
+   const cb=page.getCropBox();const x0=cb.x,y0=cb.y,w=cb.width,h=cb.height;
+   const pl={0:[x0,y0,w,h],90:[x0+w,y0,h,w],180:[x0+w,y0+h,w,h],270:[x0,y0+h,h,w]}[r];
+   page.drawImage(png,{x:pl[0],y:pl[1],width:pl[2],height:pl[3],rotate:degrees(r)});
+  }
+ }
+ out.setProducer('Editor PDF');out.setModificationDate(new Date());
+ return await out.save();
+}
+let dlP=null;
+function getDl(){if(!dlP&&window.claude&&typeof window.claude.use==='function'){dlP=Promise.race([window.claude.use('downloads').catch(()=>null),new Promise(r=>setTimeout(()=>r(null),10000))])}return dlP||Promise.resolve(null)}
+setTimeout(getDl,0);
+async function download(bytes,name){
+ const blob=new Blob([bytes],{type:'application/pdf'});
+ const dl=await getDl();
+ if(dl){try{await dl.save({filename:name,data:blob});toast('PDF tersimpan: '+name)}catch(e){const c=e&&e.code;toast(c==='declined'?'Penyimpanan dibatalkan':c==='host_unavailable'?'Aplikasi ini tidak bisa menyimpan file. Buka di browser komputer.':'Gagal menyimpan file')}return}
+ const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),8000);toast('Mengunduh '+name);
+}
+const baseName=()=>fileName.replace(/\.pdf$/i,'');
+async function exportPages(list,suffix,btn){
+ commitText();if(!list.length)return;btn.disabled=true;const old=btn.innerHTML;btn.textContent='Menyiapkan…';
+ try{const bytes=await buildPdf(list);await download(bytes,baseName()+suffix+'.pdf')}
+ catch(e){console.error(e);toast('Gagal membuat PDF. File asli mungkin terenkripsi atau rusak.')}
+ finally{btn.disabled=false;btn.innerHTML=old}}
+$('#bSave').onclick=()=>exportPages(pages,'-edit',$('#bSave'));
+$('#bSaveOne').onclick=()=>exportPages([pages[cur]].filter(Boolean),'-hal'+(cur+1),$('#bSaveOne'));
+
+/* ---------- files & keys ---------- */
+$('#bOpen').onclick=()=>$('#fPdf').click();$('#bMerge').onclick=()=>$('#fMerge').click();
+$('#fPdf').onchange=async e=>{if(e.target.files.length)await openFiles(e.target.files,false);e.target.value=''};
+$('#fMerge').onchange=async e=>{if(e.target.files.length)await openFiles(e.target.files,true);e.target.value=''};
+let dc=0;
+addEventListener('dragenter',e=>{if(dragFrom>=0||!e.dataTransfer.types.includes('Files'))return;dc++;document.body.classList.add('drag')});
+addEventListener('dragleave',()=>{if(dc>0&&--dc===0)document.body.classList.remove('drag')});
+addEventListener('dragover',e=>{if(e.dataTransfer.types.includes('Files'))e.preventDefault()});
+addEventListener('drop',e=>{if(!e.dataTransfer.files.length)return;e.preventDefault();dc=0;document.body.classList.remove('drag');const fs=[...e.dataTransfer.files];const hasPdf=fs.some(f=>/\.pdf$/i.test(f.name)||f.type==='application/pdf');
+ openFiles(fs,!document.body.classList.contains('home')&&hasPdf&&pages.length&&!isSample)});
+addEventListener('keydown',e=>{
+ if(e.target.matches('input,select,textarea'))return;
+ if(document.body.classList.contains('home'))return;
+ const mod=e.ctrlKey||e.metaKey;
+ if(mod&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?doRedo():doUndo();return}
+ if(mod&&e.key.toLowerCase()==='y'){e.preventDefault();doRedo();return}
+ if(mod)return;
+ if((e.key==='Delete'||e.key==='Backspace')&&sel>=0){e.preventDefault();delObj();return}
+ if(e.key==='PageDown')go(cur+1);if(e.key==='PageUp')go(cur-1);
+ const m={v:'select',t:'text',p:'pen',h:'hl',r:'rect',w:'white'}[e.key.toLowerCase()];if(m)setTool(m);
+ if(e.key==='Escape'){sel=-1;drawOverlay();$('#mSign').classList.remove('on')}
+});
+let rz;new ResizeObserver(()=>{clearTimeout(rz);rz=setTimeout(renderMain,120)}).observe(stage);
+
+/* ---------- sample document ---------- */
+let isSample=true;
+async function sample(){
+ const{PDFDocument,StandardFonts,rgb}=PDFLib;const d=await PDFDocument.create();
+ const f=await d.embedFont(StandardFonts.Helvetica),fb=await d.embedFont(StandardFonts.HelveticaBold);
+ const ink=rgb(.07,.07,.08),gray=rgb(.45,.47,.46),ln=rgb(.75,.77,.76);
+ const p1=d.addPage([595.28,841.89]);
+ p1.drawText('FORMULIR PENDAFTARAN KEGIATAN',{x:60,y:770,size:18,font:fb,color:ink});
+ p1.drawText('Seminar Kewirausahaan Digital 2026',{x:60,y:748,size:12,font:f,color:gray});
+ p1.drawLine({start:{x:60,y:735},end:{x:535,y:735},thickness:1,color:ink});
+ const fields=['Nama lengkap','NIM','Program studi','Nomor HP','Email','Tanggal'];
+ fields.forEach((t,i)=>{const y=690-i*42;p1.drawText(t,{x:60,y,size:11,font:f,color:ink});p1.drawText(':',{x:170,y,size:11,font:f,color:ink});p1.drawLine({start:{x:180,y:y-3},end:{x:535,y:y-3},thickness:.7,color:ln})});
+ const para=['Dengan ini saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan','sesuai jadwal yang ditetapkan panitia, serta mematuhi tata tertib yang berlaku.','Data yang saya isi pada formulir ini adalah benar.'];
+ para.forEach((t,i)=>p1.drawText(t,{x:60,y:410-i*17,size:11,font:f,color:ink}));
+ p1.drawText('Tanda tangan peserta,',{x:380,y:330,size:11,font:f,color:ink});
+ p1.drawRectangle({x:380,y:230,width:155,height:85,borderColor:ln,borderWidth:.8});
+ p1.drawText('(............................................)',{x:380,y:212,size:10,font:f,color:gray});
+ p1.drawText('Halaman 1 dari 2',{x:60,y:50,size:9,font:f,color:gray});
+ const p2=d.addPage([595.28,841.89]);
+ p2.drawText('LAMPIRAN: JADWAL KEGIATAN',{x:60,y:770,size:16,font:fb,color:ink});
+ const rows=[['Waktu','Agenda'],['08.00','Registrasi peserta'],['08.30','Pembukaan'],['09.00','Materi 1: Model bisnis digital'],['10.30','Materi 2: Pencatatan keuangan UMKM'],['12.00','Istirahat'],['13.00','Praktik dan diskusi kelompok'],['15.00','Penutupan']];
+ rows.forEach((r,i)=>{const y=720-i*30;const fnt=i?f:fb;p2.drawText(r[0],{x:66,y,size:11,font:fnt,color:ink});p2.drawText(r[1],{x:150,y,size:11,font:fnt,color:ink});p2.drawLine({start:{x:60,y:y-9},end:{x:535,y:y-9},thickness:.6,color:ln})});
+ p2.drawText('Halaman 2 dari 2',{x:60,y:50,size:9,font:f,color:gray});
+ return await d.save();
+}
+setTool('select');
+document.body.classList.add('home');
+const drop=$('#drop');
+drop.onclick=()=>$('#fPdf').click();
+drop.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('#fPdf').click()}};
+['dragenter','dragover'].forEach(t=>drop.addEventListener(t,()=>drop.classList.add('over')));
+['dragleave','drop'].forEach(t=>drop.addEventListener(t,()=>drop.classList.remove('over')));
+$('#bHome').onclick=()=>showHome(true);
+document.body.classList.add('has-bg');
+$('#bResume').onclick=()=>showHome(false);
+$('#fPdf').addEventListener('change',()=>{isSample=false});
+$('#bSample').onclick=async()=>{
+ if(!ok)return;const b=await sample();isSample=true;
+ if(await addPdf(b.buffer,'contoh-formulir.pdf',false)){
+  $('#fmeta').textContent='Contoh dokumen. Klik Buka PDF untuk mengedit file Anda sendiri.';
+  const p=pages[0];if(p){p.ann.push({t:'text',x:190,y:140,s:'Andi Pratama',z:13,c:'#1d4ed8',f:'sans',b:false},{t:'hl',c:'#ffe14d',lw:12,p:[[60,428],[505,428]]});undo=[];renderMain();drawThumbs()}}
+};
+if(!ok){$('#drop').querySelector('strong').textContent='Pustaka PDF gagal dimuat';$('#drop').querySelector('.dsub').textContent='Periksa koneksi internet, lalu muat ulang halaman.'}
+}
+</script>
+</body>
+</html>
