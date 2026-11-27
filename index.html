@@ -133,7 +133,31 @@ select{min-height:34px;border:1px solid var(--line);border-radius:7px;background
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:30;max-width:90vw}
 #toast.on{opacity:1;transform:translateX(-50%)}
 .drag:after{content:"Lepaskan file PDF atau gambar di sini";position:fixed;inset:10px;border:3px dashed var(--acc);border-radius:16px;display:grid;place-items:center;background:color-mix(in srgb,var(--field) 85%,transparent);font:700 24px "Space Grotesk",sans-serif;z-index:40}
-@media(prefers-reduced-motion:reduce){#toast,.drop{transition:none}}
+.ocrp{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--bg);border-left:1px solid var(--line);box-shadow:-20px 0 50px -20px rgba(0,0,0,.35);z-index:18;display:flex;flex-direction:column}
+.ocrp[hidden]{display:none}
+.oh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 12px 12px 18px;border-bottom:1px solid var(--line)}
+.oh h3{margin:0;font:700 19px/1.15 "Space Grotesk",Inter,sans-serif}
+.ob{padding:16px 18px 24px;overflow:auto;display:grid;gap:14px;align-content:start}
+.seg{border:0;margin:0;padding:0;display:grid;gap:8px}
+.seg legend,.og label,.olab{font-size:13px;font-weight:600;color:var(--mute);margin-bottom:6px;padding:0}
+.seg label{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:11px 12px;cursor:pointer}
+.seg label:has(input:checked){border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+.seg label.off{opacity:.5;cursor:not-allowed}
+.seg input{margin-top:3px;accent-color:var(--acc)}
+.seg strong{display:block;font-weight:600}.seg small{display:block;color:var(--mute);font-size:13px;line-height:1.4}
+.og{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.og label{display:grid;gap:4px;margin:0}
+.og select{min-height:40px;font-size:15px}
+.prog .pt{display:flex;justify-content:space-between;font-size:13px;color:var(--mute);margin-bottom:6px;font-variant-numeric:tabular-nums}
+.pb{height:8px;border-radius:8px;background:var(--panel);overflow:hidden}.pb i{display:block;height:100%;width:0;background:var(--mint);transition:width .2s}
+.oerr{margin:0;font-size:14px;color:light-dark(#b42318,#ff9a8a);background:light-dark(#fef3f2,#2a1513);border-radius:10px;padding:10px 12px}
+.oerr button{margin-top:8px}
+#ocrOut{width:100%;min-height:240px;resize:vertical;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:15px/1.5 Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.45}
+.chk input{margin-top:3px;accent-color:var(--acc);width:18px;height:18px;flex:none}
+.chk small{color:var(--mute)}
+.pg .ocrt{font-size:11px;font-weight:600;color:light-dark(#9a4a16,#f2a36b)}
+@media(prefers-reduced-motion:reduce){#toast,.drop,.pb i{transition:none}}
 @media(max-width:800px){.tool span{display:none}.tool{padding:0 9px}}
 @media(max-width:600px){
  body{overflow:auto;display:block}
@@ -174,6 +198,8 @@ select{min-height:34px;border:1px solid var(--line);border-radius:7px;background
  <symbol id="i-open" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></symbol>
  <symbol id="i-merge" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol>
+ <symbol id="i-ocr" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M8 9.5h8M8 12.5h8M8 15.5h5"/></symbol>
+ <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
 </svg>
 
@@ -234,6 +260,7 @@ select{min-height:34px;border:1px solid var(--line);border-radius:7px;background
     <button class="tool" data-tool="white" title="Tutup putih (W)"><svg class="i"><use href="#i-white"/></svg><span>Tutup putih</span></button>
     <button class="tool" id="bImg" title="Sisipkan gambar"><svg class="i"><use href="#i-img"/></svg><span>Gambar</span></button>
     <button class="tool" id="bSign" title="Tanda tangan"><svg class="i"><use href="#i-sign"/></svg><span>Tanda tangan</span></button>
+    <button class="tool" id="bOcr" title="OCR: ambil teks dari halaman"><svg class="i"><use href="#i-ocr"/></svg><span>OCR</span></button>
    </div>
    <div class="props">
     <span id="sws"></span>
@@ -285,11 +312,32 @@ select{min-height:34px;border:1px solid var(--line);border-radius:7px;background
   </div>
  </div>
 </div>
+<aside class="ocrp" id="ocrP" aria-labelledby="ocrT" hidden>
+ <div class="oh"><h3 id="ocrT">OCR · Ambil teks dari dokumen</h3><button class="ic" id="ocrX" aria-label="Tutup panel OCR"><svg class="i"><use href="#i-x"/></svg></button></div>
+ <div class="ob">
+  <fieldset class="seg"><legend>Mesin OCR</legend>
+   <label><input type="radio" name="eng" value="local" checked><span><strong>Di perangkat</strong><small>Gratis, tanpa kirim data. Cocok untuk cetakan yang jelas.</small></span></label>
+   <label id="engAiL"><input type="radio" name="eng" value="ai"><span><strong>Claude AI</strong><small id="engAiNote">Lebih akurat untuk foto, tulisan tangan, dan tabel. Memakai kuota Claude Anda.</small></span></label>
+  </fieldset>
+  <div class="og">
+   <label id="langL">Bahasa<select id="ocrLang"><option value="ind+eng">Indonesia + Inggris</option><option value="ind">Indonesia</option><option value="eng">Inggris</option></select></label>
+   <label>Halaman<select id="ocrScope"><option value="cur">Halaman ini</option><option value="all">Semua halaman</option></select></label>
+  </div>
+  <div class="row"><button class="btn pri" id="ocrGo">Mulai OCR</button><button class="btn" id="ocrStop" hidden>Hentikan</button></div>
+  <div class="prog" id="ocrProg" hidden><div class="pt"><span id="ocrStat">Menyiapkan…</span><span id="ocrPct">0%</span></div><div class="pb"><i id="ocrBar"></i></div></div>
+  <p class="oerr" id="ocrErr" hidden></p>
+  <label class="olab" for="ocrOut">Hasil teks</label>
+  <textarea id="ocrOut" placeholder="Teks hasil OCR akan muncul di sini. Anda bisa langsung mengeditnya."></textarea>
+  <div class="row"><button class="btn" id="ocrCopy">Salin teks</button><button class="btn" id="ocrTxt">Unduh .txt</button><button class="btn" id="ocrClr">Bersihkan</button></div>
+  <label class="chk"><input type="checkbox" id="ocrLayer" checked><span>Saat unduh PDF, tambahkan lapisan teks tersembunyi agar PDF bisa dicari dan teksnya bisa diblok/salin. <small>(Hanya dari mesin "Di perangkat".)</small></span></label>
+ </div>
+</aside>
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 {
 const $=s=>document.querySelector(s);
@@ -353,7 +401,7 @@ async function addPdf(buf,name,append){
  for(let i=0;i<doc.numPages;i++){const pg=await doc.getPage(i+1);const vp=pg.getViewport({scale:1});np.push({id:uid++,src:si,idx:i,rot:0,w0:vp.width,h0:vp.height,ann:[]})}
  commitText();
  if(append){save();const at=pages.length;pages=pages.concat(np);cur=at;toast(np.length+' halaman dari "'+name+'" ditambahkan')}
- else{pages=np;cur=0;undo=[];redo=[];fileName=name;$('#fmeta').textContent='Semua proses berjalan di browser Anda, file tidak diunggah ke server.'}
+ else{pages=np;cur=0;undo=[];redo=[];fileName=name;for(const k in ocrMap)delete ocrMap[k];ocrOut.value='';$('#fmeta').textContent='Semua proses berjalan di browser Anda, file tidak diunggah ke server.'}
  sel=-1;document.body.classList.remove('home');refresh();return true;
 }
 async function readFile(f){return await f.arrayBuffer()}
@@ -411,7 +459,7 @@ async function drawThumb(p){const el=list.querySelector('canvas[data-t="'+p.id+'
 let tq=Promise.resolve();
 function drawThumbs(only){const ps=only?[only]:pages.slice();tq=tq.then(async()=>{for(const p of ps){try{await drawThumb(p)}catch(e){}}})}
 function renderList(){
- list.innerHTML=pages.map((p,i)=>'<li class="pg'+(i===cur?' on':'')+'" draggable="true" data-i="'+i+'"><button data-i="'+i+'" aria-label="Halaman '+(i+1)+'"><canvas data-t="'+p.id+'"></canvas></button><span>'+(i+1)+'</span></li>').join('');
+ list.innerHTML=pages.map((p,i)=>'<li class="pg'+(i===cur?' on':'')+'" draggable="true" data-i="'+i+'"><button data-i="'+i+'" aria-label="Halaman '+(i+1)+'"><canvas data-t="'+p.id+'"></canvas></button><span>'+(i+1)+(ocrMap[p.id]?' <b class="ocrt">OCR</b>':'')+'</span></li>').join('');
  const cur_el=list.querySelector('.pg.on');if(cur_el)cur_el.scrollIntoView({block:'nearest',inline:'nearest'});
 }
 function updPager(){
@@ -566,7 +614,7 @@ list.addEventListener('dragend',()=>{dragFrom=-1;list.querySelectorAll('.drop').
 /* ---------- export ---------- */
 async function buildPdf(sel){
  await Promise.all(sel.flatMap(p=>p.ann.filter(a=>a.t==='text')).map(ensureFont));
- const{PDFDocument,degrees}=PDFLib;const out=await PDFDocument.create();
+ const{PDFDocument,degrees}=PDFLib;const out=await PDFDocument.create();let ocrFont=null;
  for(const p of sel){
   let page,orig=0;
   if(p.src<0){page=out.addPage([p.w0,p.h0])}
@@ -580,6 +628,20 @@ async function buildPdf(sel){
    const pl={0:[x0,y0,w,h],90:[x0+w,y0,h,w],180:[x0+w,y0+h,w,h],270:[x0,y0+h,h,w]}[r];
    page.drawImage(png,{x:pl[0],y:pl[1],width:pl[2],height:pl[3],rotate:degrees(r)});
   }
+  const oc_=ocrMap[p.id];
+  if($('#ocrLayer').checked&&oc_&&oc_.words&&oc_.rot===p.rot&&oc_.words.length){
+   if(!ocrFont)ocrFont=await out.embedFont(PDFLib.StandardFonts.Helvetica);
+   const[W,H]=dims(p);const cb=page.getCropBox();const x0=cb.x,y0=cb.y,w=cb.width,h=cb.height;
+   const map=(dx,dy)=>{const fx=dx/W,fy=dy/H;return r===90?[x0+fy*w,y0+fx*h]:r===180?[x0+(1-fx)*w,y0+fy*h]:r===270?[x0+(1-fy)*w,y0+(1-fx)*h]:[x0+fx*w,y0+(1-fy)*h]};
+   for(const wd of oc_.words){
+    const t=String(wd.t).replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"').replace(/[\u2013\u2014]/g,'-').replace(/[^\x20-\x7E\u00A0-\u00FF]/g,'');
+    if(!t.trim())continue;
+    let base;try{base=ocrFont.widthOfTextAtSize(t,1)}catch(e){continue}
+    if(!(base>0))continue;const size=Math.min(wd.w/base,wd.h*1.4);if(!(size>1))continue;
+    const[X,Y]=map(wd.x,wd.y+wd.h*.8);
+    try{page.drawText(t,{x:X,y:Y,size,font:ocrFont,rotate:degrees(r),opacity:0})}catch(e){}
+   }
+  }
  }
  out.setProducer('Editor PDF');out.setModificationDate(new Date());
  return await out.save();
@@ -587,10 +649,10 @@ async function buildPdf(sel){
 let dlP=null;
 function getDl(){if(!dlP&&window.claude&&typeof window.claude.use==='function'){dlP=Promise.race([window.claude.use('downloads').catch(()=>null),new Promise(r=>setTimeout(()=>r(null),10000))])}return dlP||Promise.resolve(null)}
 setTimeout(getDl,0);
-async function download(bytes,name){
- const blob=new Blob([bytes],{type:'application/pdf'});
+async function download(bytes,name,type){
+ const blob=new Blob([bytes],{type:type||'application/pdf'});
  const dl=await getDl();
- if(dl){try{await dl.save({filename:name,data:blob});toast('PDF tersimpan: '+name)}catch(e){const c=e&&e.code;toast(c==='declined'?'Penyimpanan dibatalkan':c==='host_unavailable'?'Aplikasi ini tidak bisa menyimpan file. Buka di browser komputer.':'Gagal menyimpan file')}return}
+ if(dl){try{await dl.save({filename:name,data:blob});toast('File tersimpan: '+name)}catch(e){const c=e&&e.code;toast(c==='declined'?'Penyimpanan dibatalkan':c==='host_unavailable'?'Aplikasi ini tidak bisa menyimpan file. Buka di browser komputer.':'Gagal menyimpan file')}return}
  const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),8000);toast('Mengunduh '+name);
 }
 const baseName=()=>fileName.replace(/\.pdf$/i,'');
@@ -601,6 +663,93 @@ async function exportPages(list,suffix,btn){
  finally{btn.disabled=false;btn.innerHTML=old}}
 $('#bSave').onclick=()=>exportPages(pages,'-edit',$('#bSave'));
 $('#bSaveOne').onclick=()=>exportPages([pages[cur]].filter(Boolean),'-hal'+(cur+1),$('#bSaveOne'));
+
+/* ---------- OCR ---------- */
+const ocrMap={};
+const TV='5.1.1';
+let tw=null,twLang='',ocrRun=null,sampleFn=null,aiOk=false;
+const ocrP=$('#ocrP'),ocrOut=$('#ocrOut');
+const engine=()=>document.querySelector('input[name=eng]:checked').value;
+function ocrErr(msg,offerAi){const el=$('#ocrErr');el.hidden=!msg;el.textContent=msg||'';
+ if(msg&&offerAi&&aiOk){const b=document.createElement('button');b.className='btn';b.textContent='Coba dengan Claude AI';b.onclick=()=>{document.querySelector('input[value=ai]').checked=true;syncEng();el.hidden=true};el.append(document.createElement('br'),b)}}
+function setProg(stat,frac){$('#ocrProg').hidden=false;$('#ocrStat').textContent=stat;const v=Math.round(Math.max(0,Math.min(1,frac))*100);$('#ocrPct').textContent=v+'%';$('#ocrBar').style.width=v+'%'}
+function syncEng(){$('#langL').style.opacity=engine()==='ai'?.45:1;$('#ocrLang').disabled=engine()==='ai'}
+document.querySelectorAll('input[name=eng]').forEach(i=>i.onchange=syncEng);
+async function initAi(){
+ try{if(!(window.claude&&typeof window.claude.use==='function'))throw 0;
+  sampleFn=await Promise.race([window.claude.use('sample'),new Promise(r=>setTimeout(()=>r(null),10000))]);
+  if(!sampleFn)throw 0;const lim=await sampleFn.limits().catch(()=>null);if(!lim||!lim.images)throw 0;aiOk=true}
+ catch(e){aiOk=false}
+ const L=$('#engAiL');L.classList.toggle('off',!aiOk);L.querySelector('input').disabled=!aiOk;
+ if(!aiOk)$('#engAiNote').textContent='Tidak tersedia di tampilan ini (hanya bisa saat dibuka di Claude).';
+}
+setTimeout(initAi,0);
+function openOcr(){if(!pages.length)return;commitText();ocrP.style.top=(innerWidth>600?document.querySelector('.top').offsetHeight:0)+'px';ocrP.hidden=false;syncEng();showOcrText()}
+$('#bOcr').onclick=()=>ocrP.hidden?openOcr():(ocrP.hidden=true);
+$('#ocrX').onclick=()=>ocrP.hidden=true;
+function showOcrText(){const parts=[];pages.forEach((p,i)=>{const o=ocrMap[p.id];if(o)parts.push((pages.length>1?'--- Halaman '+(i+1)+' ---\n':'')+o.text.trim())});if(parts.length)ocrOut.value=parts.join('\n\n')}
+async function pageCanvas(p,maxSide){
+ const[W,H]=dims(p);const k=Math.min(3.2,maxSide/Math.max(W,H));const c=document.createElement('canvas');c.width=Math.round(W*k);c.height=Math.round(H*k);
+ const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
+ if(p.src>=0){const pg=await srcs[p.src].doc.getPage(p.idx+1);await pg.render({canvasContext:x,viewport:pg.getViewport({scale:k,rotation:(pg.rotate+p.rot)%360})}).promise}
+ await Promise.all(p.ann.filter(a=>a.t==='text').map(ensureFont));paint(x,p.ann,k,-1);return{c,k}}
+const STAT={'loading tesseract core':'Memuat mesin OCR…','initializing tesseract':'Menyiapkan mesin OCR…','initialized tesseract':'Mesin OCR siap','loading language traineddata':'Memuat data bahasa…','loaded language traineddata':'Data bahasa dimuat','initializing api':'Menyiapkan…','initialized api':'Siap','recognizing text':'Membaca teks'};
+let curPg={i:0,n:1};
+async function getWorker(lang){
+ if(tw&&twLang===lang)return tw;
+ if(tw){try{await tw.terminate()}catch(e){}tw=null}
+ if(!window.Tesseract)throw new Error('lib');
+ const base=new URL('tessdata/',location.href).href;
+ const wsrc='https://cdn.jsdelivr.net/npm/tesseract.js@'+TV+'/dist/worker.min.js';
+ const shim='const B='+JSON.stringify(base)+';const F=self.fetch.bind(self);self.fetch=async(u,o)=>{const m=String(u&&u.url||u).match(/([a-z_]+)\\.traineddata/);if(m){const r=await F(B+m[1]+".txt");if(!r.ok)throw new Error("lang "+r.status);const s=(await r.text()).replace(/\\s+/g,"");const bin=atob(s);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return new Response(a)}return F(u,o)};importScripts('+JSON.stringify(wsrc)+');';
+ const wurl=URL.createObjectURL(new Blob([shim],{type:'text/javascript'}));
+ const mk=Tesseract.createWorker(lang.split('+'),1,{
+  workerPath:wurl,workerBlobURL:false,
+  corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@'+TV,
+  langPath:base.replace(/\/$/,''),gzip:true,cacheMethod:'none',
+  logger:m=>{if(!ocrRun)return;const s=STAT[m.status]||m.status;if(m.status==='recognizing text')setProg(s+(curPg.n>1?' (halaman '+(curPg.i+1)+' dari '+curPg.n+')':'')+'…',(curPg.i+(m.progress||0))/curPg.n);else setProg(s,curPg.i/curPg.n)},
+  errorHandler:e=>console.error('ocr',e)});
+ tw=await Promise.race([mk,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),90000))]);twLang=lang;return tw}
+async function runLocal(list,run){
+ setProg('Memuat mesin OCR…',0);
+ let w;try{w=await getWorker($('#ocrLang').value)}catch(e){tw=null;throw{local:true}}
+ for(let i=0;i<list.length;i++){if(run.stop)return;const p=list[i];curPg={i,n:list.length};
+  const{c,k}=await pageCanvas(p,2600);
+  const{data}=await w.recognize(c);if(run.stop)return;
+  const words=(data.words||[]).filter(x=>x.text&&x.text.trim()&&x.confidence>20).map(x=>({t:x.text,x:x.bbox.x0/k,y:x.bbox.y0/k,w:(x.bbox.x1-x.bbox.x0)/k,h:(x.bbox.y1-x.bbox.y0)/k}));
+  ocrMap[p.id]={text:(data.text||'').replace(/\n{3,}/g,'\n\n'),words,rot:p.rot,engine:'local'};showOcrText();renderList();drawThumbs()}
+}
+async function runAi(list,run){
+ for(let i=0;i<list.length;i++){if(run.stop)return;const p=list[i];
+  setProg('Claude membaca halaman '+(i+1)+(list.length>1?' dari '+list.length:'')+'…',i/list.length);
+  const{c}=await pageCanvas(p,2000);const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.92));
+  run.ctl=new AbortController();
+  const prompt='Kamu adalah mesin OCR. Gambar terlampir adalah satu halaman dokumen. Transkripsikan SEMUA teks yang terlihat persis seperti tertulis, dengan bahasa aslinya, mengikuti urutan baca dari atas ke bawah. Pertahankan pemisahan baris dan paragraf. Untuk tabel, tulis satu baris tabel per baris teks dengan pemisah " | ". Jangan menambahkan komentar, judul, penjelasan, atau format markdown. Jika tidak ada teks sama sekali, balas: (tidak ada teks)';
+  const prev=ocrOut.value;
+  try{const{text}=await sampleFn(prompt,{images:[blob],signal:run.ctl.signal,onText:({text})=>{ocrOut.value=(prev?prev+'\n\n':'')+text;setProg('Claude menulis hasil halaman '+(i+1)+'…',(i+.6)/list.length)}});
+   ocrMap[p.id]={text,words:null,rot:p.rot,engine:'ai'};showOcrText();renderList();drawThumbs()}
+  catch(e){if(e&&e.code==='cancelled')return;throw{ai:e&&e.code}}
+ }
+}
+$('#ocrGo').onclick=async()=>{
+ if(ocrRun)return;commitText();ocrErr('');
+ const list=$('#ocrScope').value==='all'?pages.slice():[pages[cur]];if(!list[0])return;
+ const run=ocrRun={stop:false};$('#ocrGo').disabled=true;$('#ocrStop').hidden=false;
+ try{
+  if(engine()==='ai'){if(!aiOk)throw{ai:'unavailable'};await runAi(list,run)}else await runLocal(list,run);
+  if(!run.stop){setProg('Selesai',1);toast('OCR selesai untuk '+list.length+' halaman')}
+ }catch(e){
+  $('#ocrProg').hidden=true;
+  if(e&&e.local)ocrErr('Mesin OCR di perangkat tidak bisa dimuat di tampilan ini (mungkin diblokir browser atau koneksi).',true);
+  else if(e&&e.ai){const m={not_granted:'Izin memakai Claude ditolak.',rate_limited:'Terlalu banyak permintaan atau kuota Claude habis. Coba lagi nanti.',session_expired:'Sesi Claude berakhir, silakan masuk lagi.',image_rejected:'Gambar halaman ditolak. Coba perkecil zoom atau halaman lain.',refused:'Claude menolak memproses halaman ini.',unavailable:'Claude AI tidak tersedia di tampilan ini.'};ocrErr(m[e.ai]||'Claude AI gagal memproses. Coba lagi.')}
+  else{console.error(e);ocrErr('OCR gagal: '+((e&&e.message)||'kesalahan tidak dikenal'),true)}
+ }finally{ocrRun=null;$('#ocrGo').disabled=false;$('#ocrStop').hidden=true}
+};
+$('#ocrStop').onclick=async()=>{if(!ocrRun)return;ocrRun.stop=true;if(ocrRun.ctl)ocrRun.ctl.abort();if(tw){try{await tw.terminate()}catch(e){}tw=null}$('#ocrProg').hidden=true;toast('OCR dihentikan')};
+$('#ocrCopy').onclick=async()=>{const t=ocrOut.value;if(!t.trim()){toast('Belum ada teks');return}
+ try{await navigator.clipboard.writeText(t);toast('Teks disalin')}catch(e){ocrOut.focus();ocrOut.select();try{document.execCommand('copy');toast('Teks disalin')}catch(_){toast('Tekan Ctrl+C untuk menyalin')}}};
+$('#ocrTxt').onclick=()=>{const t=ocrOut.value;if(!t.trim()){toast('Belum ada teks');return}download(t,baseName()+'-ocr.txt','text/plain')};
+$('#ocrClr').onclick=()=>{ocrOut.value='';for(const k in ocrMap)delete ocrMap[k];$('#ocrProg').hidden=true;renderList();drawThumbs()};
 
 /* ---------- files & keys ---------- */
 $('#bOpen').onclick=()=>$('#fPdf').click();$('#bMerge').onclick=()=>$('#fMerge').click();
@@ -622,7 +771,7 @@ addEventListener('keydown',e=>{
  if((e.key==='Delete'||e.key==='Backspace')&&sel>=0){e.preventDefault();delObj();return}
  if(e.key==='PageDown')go(cur+1);if(e.key==='PageUp')go(cur-1);
  const m={v:'select',t:'text',p:'pen',h:'hl',r:'rect',w:'white'}[e.key.toLowerCase()];if(m)setTool(m);
- if(e.key==='Escape'){sel=-1;drawOverlay();$('#mSign').classList.remove('on')}
+ if(e.key==='Escape'){sel=-1;drawOverlay();$('#mSign').classList.remove('on');ocrP.hidden=true}
 });
 let rz;new ResizeObserver(()=>{clearTimeout(rz);rz=setTimeout(renderMain,120)}).observe(stage);
 
