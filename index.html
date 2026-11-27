@@ -235,7 +235,7 @@ select{min-height:34px;border:1px solid var(--line);border-radius:7px;background
    <button class="lnk" id="bSample">Belum punya file? Coba dengan contoh dokumen</button>
   </div>
   <ul class="feats">
-   <li><span class="fi"><svg class="i"><use href="#i-txt"/></svg></span><div><strong>Tambah teks</strong><p>Isi formulir, beri catatan, pilih warna dan ukuran huruf.</p></div></li>
+   <li><span class="fi"><svg class="i"><use href="#i-txt"/></svg></span><div><strong>Edit teks</strong><p>Klik teks di PDF untuk langsung mengubahnya, atau tambah teks baru.</p></div></li>
    <li><span class="fi"><svg class="i"><use href="#i-sign"/></svg></span><div><strong>Tanda tangan</strong><p>Gambar tanda tangan sekali, tempel di mana saja.</p></div></li>
    <li><span class="fi"><svg class="i"><use href="#i-merge"/></svg></span><div><strong>Gabung PDF</strong><p>Satukan beberapa file menjadi satu dokumen.</p></div></li>
    <li><span class="fi"><svg class="i"><use href="#i-rr"/></svg></span><div><strong>Atur halaman</strong><p>Putar, urutkan ulang, duplikat, atau hapus halaman.</p></div></li>
@@ -372,7 +372,7 @@ function bbox(a){
  return{x:Math.min(a.x,a.x+a.w),y:Math.min(a.y,a.y+a.h),w:Math.abs(a.w),h:Math.abs(a.h)}}
 function paint(ctx,ann,k,skip){
  ann.forEach((a,i)=>{if(i===skip)return;ctx.save();ctx.setTransform(k,0,0,k,0,0);
-  if(a.t==='white'){ctx.fillStyle='#ffffff';ctx.fillRect(a.x,a.y,a.w,a.h)}
+  if(a.t==='white'){ctx.fillStyle=a.fill||'#ffffff';ctx.fillRect(a.x,a.y,a.w,a.h)}
   else if(a.t==='rect'){ctx.strokeStyle=a.c;ctx.lineWidth=a.lw;ctx.strokeRect(a.x,a.y,a.w,a.h)}
   else if(a.p){ctx.strokeStyle=a.c;ctx.lineWidth=a.lw;ctx.lineCap='round';ctx.lineJoin='round';if(a.t==='hl')ctx.globalAlpha=.38;
    ctx.beginPath();a.p.forEach((q,j)=>j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));if(a.p.length===1)ctx.lineTo(a.p[0][0]+.1,a.p[0][1]);ctx.stroke()}
@@ -435,6 +435,7 @@ async function renderMain(){
   if(tk!==rtoken)return;
  }
  pc.width=off.width;pc.height=off.height;pc.getContext('2d').drawImage(off,0,0);
+ loadLines(p).catch(()=>{});
  $('#zv').textContent=Math.round(zoom*100)+'%';
 }
 function drawOverlay(){
@@ -444,6 +445,8 @@ function drawOverlay(){
  if(sel>=0&&p.ann[sel]&&sel!==editing){const b=bbox(p.ann[sel]);const m=3/S;
   octx.setTransform(k,0,0,k,0,0);octx.lineWidth=1.2/S;octx.strokeStyle='#2b6cff';octx.setLineDash([5/S,4/S]);octx.strokeRect(b.x-m,b.y-m,b.w+2*m,b.h+2*m);octx.setLineDash([]);
   if(!p.ann[sel].p){const hs=9/S;octx.fillStyle='#fff';octx.fillRect(b.x+b.w+m-hs/2,b.y+b.h+m-hs/2,hs,hs);octx.strokeRect(b.x+b.w+m-hs/2,b.y+b.h+m-hs/2,hs,hs)}}
+ if(hoverLine&&!act&&ed.style.display!=='block'){const L=hoverLine;octx.setTransform(k,0,0,k,0,0);octx.fillStyle='rgba(43,108,255,.08)';octx.strokeStyle='rgba(43,108,255,.75)';octx.lineWidth=1/S;octx.setLineDash([]);
+  const bx=lineBox(L);octx.fillRect(bx.x,bx.y,bx.w,bx.h);octx.strokeRect(bx.x,bx.y,bx.w,bx.h)}
  updUndo();
 }
 
@@ -472,7 +475,7 @@ function refresh(){renderList();updPager();renderMain();drawThumbs()}
 function go(i){if(i<0||i>=pages.length||i===cur)return;commitText();cur=i;sel=-1;renderList();updPager();renderMain();drawThumbs()}
 
 /* ---------- tools & props ---------- */
-const hints={text:'Klik di halaman untuk menulis. Klik teks yang ada untuk mengubahnya.',pen:'Tarik untuk menggambar bebas.',hl:'Tarik di atas tulisan untuk menandainya.',rect:'Tarik untuk membuat kotak.',white:'Tarik untuk menutupi bagian halaman. Catatan: teks asli di bawahnya hanya tertutup secara visual.',select:'Klik objek untuk memilih, tarik untuk memindah, tarik sudut kanan bawah untuk mengubah ukuran.'};
+const hints={text:'Klik teks di PDF untuk langsung mengeditnya, atau klik area kosong untuk menulis teks baru.',pen:'Tarik untuk menggambar bebas.',hl:'Tarik di atas tulisan untuk menandainya.',rect:'Tarik untuk membuat kotak.',white:'Tarik untuk menutupi bagian halaman. Catatan: teks asli di bawahnya hanya tertutup secara visual.',select:'Klik teks di PDF untuk langsung mengeditnya. Klik objek untuk memilih, tarik untuk memindah.'};
 function setTool(t){commitText();tool=t;document.querySelectorAll('.tool[data-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tool===t));
  oc.style.cursor=t==='select'?'default':t==='text'?'text':'crosshair';if(t!=='select'){sel=-1;drawOverlay()}$('#opWrap').hidden=true;
  const h=$('#hint');h.textContent=hints[t]||'';h.hidden=!hints[t];clearTimeout(h._t);h._t=setTimeout(()=>h.hidden=true,4500);renderSw()}
@@ -511,16 +514,20 @@ oc.addEventListener('pointerdown',e=>{
  if(tool==='select'){
   if(sel>=0&&p.ann[sel]&&!p.ann[sel].p){const b=bbox(p.ann[sel]),m=3/S,hs=14/S;
    if(Math.abs(x-(b.x+b.w+m))<hs&&Math.abs(y-(b.y+b.h+m))<hs){save();act={m:'resize',a:p.ann[sel],b,x,y,o:JSON.parse(JSON.stringify(p.ann[sel]))};return}}
-  const i=hit(p,x,y);sel=i;if(i>=0){save();act={m:'move',a:p.ann[i],x,y,moved:false}}
+  const i=hit(p,x,y);
+  if(i<0){const L=lineAt(p,x,y);if(L){e.preventDefault();sel=-1;syncProps();startLineEdit(L);return}}
+  const again=i>=0&&i===sel&&p.ann[i].t==='text';sel=i;if(i>=0){save();act={m:'move',a:p.ann[i],x,y,moved:false,clickEdit:again,idx:i}}
   syncProps();drawOverlay();return}
- if(tool==='text'){e.preventDefault();const i=hit(p,x,y);if(i>=0&&p.ann[i].t==='text')openEditor(i);else openEditor(-1,x,y);return}
+ if(tool==='text'){e.preventDefault();const i=hit(p,x,y);if(i>=0&&p.ann[i].t==='text'){openEditor(i);return}const L=i<0?lineAt(p,x,y):null;if(L)startLineEdit(L);else openEditor(-1,x,y);return}
  save();
  if(tool==='pen'||tool==='hl'){const a={t:tool,c:tool==='hl'?st.hl:st.color,lw:tool==='hl'?st.width*5:st.width,p:[[+x.toFixed(1),+y.toFixed(1)]]};p.ann.push(a);act={m:'draw',a}}
  else{const a={t:tool,c:st.color,lw:st.width,x,y,w:0,h:0};p.ann.push(a);act={m:'box',a}}
  drawOverlay();
 });
 oc.addEventListener('pointermove',e=>{
- if(!act)return;const[x,y]=pt(e);const a=act.a;
+ if(!act){if((tool==='select'||tool==='text')&&e.pointerType!=='touch'){const p=pages[cur];if(!p)return;const[x,y]=pt(e);const L=hit(p,x,y)<0?lineAt(p,x,y):null;
+   if(L!==hoverLine){hoverLine=L;oc.style.cursor=L?'text':(tool==='text'?'text':'default');drawOverlay()}}return}
+ const[x,y]=pt(e);const a=act.a;
  if(act.m==='draw')a.p.push([+x.toFixed(1),+y.toFixed(1)]);
  else if(act.m==='box'){a.w=x-a.x;a.h=y-a.y}
  else if(act.m==='move'){const dx=x-act.x,dy=y-act.y;act.x=x;act.y=y;if(dx||dy)act.moved=true;if(a.p)a.p.forEach(q=>{q[0]+=dx;q[1]+=dy});else{a.x+=dx;a.y+=dy}}
@@ -531,11 +538,61 @@ oc.addEventListener('pointermove',e=>{
 function endAct(){
  if(!act)return;const a=act.a,p=pages[cur];
  if(act.m==='box'){if(a.w<0){a.x+=a.w;a.w=-a.w}if(a.h<0){a.y+=a.h;a.h=-a.h}if(a.w<3||a.h<3){p.ann.pop();undo.pop()}}
- if(act.m==='move'&&!act.moved)undo.pop();
+ if(act.m==='move'&&!act.moved){undo.pop();if(act.clickEdit){const i=act.idx;act=null;openEditor(i);return}}
  if(act.m==='resize'&&a.t==='text')$('#pSize').value=Math.round(a.z);
  act=null;drawOverlay();drawThumbs(p);
 }
 oc.addEventListener('pointerup',endAct);oc.addEventListener('pointercancel',endAct);
+oc.addEventListener('pointerleave',()=>{if(hoverLine){hoverLine=null;drawOverlay()}});
+oc.addEventListener('dblclick',e=>{if(tool!=='select')return;const p=pages[cur];if(!p)return;const[x,y]=pt(e);const i=hit(p,x,y);if(i>=0&&p.ann[i].t==='text')openEditor(i)});
+
+/* ---------- click-to-edit original PDF text ---------- */
+let hoverLine=null;const lineCache=new Map(),lineReady=new Map();
+const linesKey=p=>p.id+':'+p.rot+':'+(ocrMap[p.id]&&ocrMap[p.id].words&&ocrMap[p.id].rot===p.rot?'o':'');
+function famOf(name,generic){const s=(name||'')+' '+(generic||'');return /courier|mono/i.test(s)?'mono':/times|serif|roman|georgia|garamond|minion|cambria/i.test(s)&&!/sans/i.test(s)?'serif':'sans'}
+function groupLines(items){
+ items.sort((a,b)=>a.b-b.b);const rows=[];
+ for(const it of items){const r=rows.find(r=>Math.abs(r.b-it.b)<Math.max(r.h,it.h)*.35);if(r){r.items.push(it);r.h=Math.max(r.h,it.h)}else rows.push({b:it.b,h:it.h,items:[it]})}
+ const out=[];
+ for(const r of rows){r.items.sort((a,b)=>a.x-b.x);let L=null;
+  for(const it of r.items){if(L&&it.x-(L.x+L.w)<it.h*1.6){const gap=it.x-(L.x+L.w);if(gap>it.h*.18&&!/\s$/.test(L.s)&&!/^\s/.test(it.s))L.s+=' ';L.s+=it.s;L.w=Math.max(L.w,it.x+it.w-L.x);L.h=Math.max(L.h,it.h);L.b=Math.max(L.b,it.b)}
+   else{L={s:it.s,x:it.x,w:it.w,b:it.b,h:it.h,ff:it.ff,bold:it.bold,ocr:it.ocr};out.push(L)}}}
+ return out.filter(L=>L.s.trim()&&L.w>1).map(L=>(L.s=L.s.replace(/\s+$/,''),L))}
+function loadLines(p){
+ const key=linesKey(p);if(lineCache.has(key))return lineCache.get(key);
+ const pr=(async()=>{let lines=[];
+  if(p.src>=0){const pg=await srcs[p.src].doc.getPage(p.idx+1);const vp=pg.getViewport({scale:1,rotation:(pg.rotate+p.rot)%360});const tc=await pg.getTextContent();const items=[];
+   for(const it of tc.items){if(!it.str||!it.transform)continue;const t=pdfjsLib.Util.transform(vp.transform,it.transform);const fh=Math.hypot(t[2],t[3]);
+    if(fh<3||t[0]<=0||Math.abs(t[1])>fh*.02||Math.abs(t[2])>fh*.02)continue;
+    let nm='';try{if(pg.commonObjs.has(it.fontName))nm=pg.commonObjs.get(it.fontName).name||''}catch(e){}
+    const gen=tc.styles&&tc.styles[it.fontName]?tc.styles[it.fontName].fontFamily:'';
+    items.push({s:it.str,x:t[4],b:t[5],h:fh,w:it.width,ff:famOf(nm,gen),bold:/bold|black|heavy|semibold/i.test(nm)})}
+   lines=groupLines(items)}
+  const o=ocrMap[p.id];
+  if(!lines.length&&o&&o.words&&o.rot===p.rot)lines=groupLines(o.words.map(w=>({s:w.t,x:w.x,w:w.w,b:w.y+w.h*.8,h:w.h*.95,ff:'sans',bold:false,ocr:true})));
+  lineReady.set(key,lines);return lines})();
+ lineCache.set(key,pr);return pr}
+function lineBox(L){return{x:L.x-2,y:L.b-L.h*.95,w:L.w+4,h:L.h*1.25}}
+function lineAt(p,x,y){const ls=lineReady.get(linesKey(p));if(!ls)return null;for(const L of ls){const b=lineBox(L);if(x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h)return L}return null}
+function hex(r,g,b){return'#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('')}
+function sampleColors(L){
+ try{const k=pc.width/(dims(pages[cur])[0]);const b=lineBox(L);const x0=Math.max(0,Math.floor(b.x*k)),y0=Math.max(0,Math.floor(b.y*k)),w=Math.min(pc.width-x0,Math.ceil(b.w*k)),hh=Math.min(pc.height-y0,Math.ceil(b.h*k));
+  if(w<2||hh<2)throw 0;const d=pc.getContext('2d').getImageData(x0,y0,w,hh).data;
+  const edge=[];const push=i=>edge.push([d[i],d[i+1],d[i+2]]);
+  for(let x=0;x<w;x+=2){push((x)*4);push(((hh-1)*w+x)*4)}for(let y=0;y<hh;y+=2){push((y*w)*4);push((y*w+w-1)*4)}
+  const med=c=>edge.map(e=>e[c]).sort((a,b)=>a-b)[edge.length>>1];const bg=[med(0),med(1),med(2)];
+  let best=null,bd=-1;for(let i=0;i<d.length;i+=4){const dd=Math.abs(d[i]-bg[0])+Math.abs(d[i+1]-bg[1])+Math.abs(d[i+2]-bg[2]);if(dd>bd){bd=dd;best=[d[i],d[i+1],d[i+2]]}}
+  return{bg:hex(...bg),fg:bd>60?hex(...best):'#111111'}}catch(e){return{bg:'#ffffff',fg:'#111111'}}}
+function startLineEdit(L){
+ const p=pages[cur];const col=sampleColors(L);hoverLine=null;
+ const cover={t:'white',x:L.x-1.5,y:L.b-L.h*.98,w:L.w+3,h:L.h*1.3,fill:col.bg};
+ const z=+(L.ocr?L.h*.9:L.h).toFixed(2);
+ const a={t:'text',x:L.x,y:L.b-z*.91,s:L.s,z,c:col.fg,f:L.ff,b:!!L.bold};
+ p.ann.push(cover);ed._cover=cover;ed._orig=L.s;editing=-3;
+ ed._a=a;ed.value=a.s;ed.style.background=col.bg;ed.style.display='block';placeEditor();drawOverlay();
+ ed.focus({preventScroll:true});setTimeout(()=>ed.focus({preventScroll:true}),0);
+ $('#pSize').value=Math.round(z);$('#pFont').value=a.f;$('#pBold').setAttribute('aria-pressed',a.b);st.bold=a.b;
+ toast('Mode edit teks: ketik perubahan, lalu klik di luar atau tekan Esc')}
 
 /* ---------- text editor ---------- */
 function openEditor(i,x,y){
@@ -555,7 +612,9 @@ function commitText(){
  if(ed.style.display!=='block')return;const p=pages[cur];const a=ed._a;const v=ed.value.replace(/\s+$/,'');ed.style.display='none';
  if(editing===-2){if(v){save();a.s=v;p.ann.push(a);sel=p.ann.length-1}}
  else if(editing>=0&&v!==a.s){save();if(v)a.s=v;else{p.ann.splice(editing,1);sel=-1}}
- editing=-1;drawOverlay();drawThumbs(p)}
+ else if(editing===-3){const cv=ed._cover;const ci=p.ann.indexOf(cv);if(ci>=0)p.ann.splice(ci,1);
+  if(v!==ed._orig){save();p.ann.push(cv);if(v){a.s=v;p.ann.push(a);sel=p.ann.length-1}else sel=-1;toast('Teks diubah. Tekan Batalkan untuk mengembalikan.')}}
+ ed.style.background='';editing=-1;drawOverlay();drawThumbs(p)}
 
 /* ---------- objects ---------- */
 function delObj(){const p=pages[cur];if(!p||sel<0)return;save();p.ann.splice(sel,1);sel=-1;$('#opWrap').hidden=true;drawOverlay();drawThumbs(p)}
